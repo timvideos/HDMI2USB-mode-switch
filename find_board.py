@@ -17,11 +17,11 @@ PathBase = namedtuple('PathBase', ['bus', 'address'])
 class Path(PathBase):
     def __init__(self, *args, **kw):
         PathBase.__init__(self, *args, **kw)
-        assert os.path.exists(self.path)
+        assert os.path.exists(self.path), "%r %r" % (self.path, self)
 
     @property
     def path(self):
-        return '/dev/bus/usb/%03x/%03x' % (self.bus, self.address)
+        return '/dev/bus/usb/%03i/%03i' % (self.bus, self.address)
 
     def __str__(self):
         return self.path
@@ -90,14 +90,8 @@ def find_usb_devices_lsusb():
 
     # 'Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub'
     lsusb_device_regex = re.compile(
-        "Bus (?P<bus>[0-9]+) Device (?P<address>[0-9a-f]+):"
+        "Bus (?P<bus>[0-9]+) Device (?P<address>[0-9]+):"
         " ID (?P<vid>[0-9a-f]+):(?P<pid>[0-9a-f]+)")
-    # ' iSerial                 0 '
-    # ' iSerial                 3 04c321e2df0e8bb2'
-    # ' iSerial                 1 0000:00:1a.0'
-    lsusb_serial_regex = re.compile(
-        r"^ *iSerial\s*[0-9]+ *(?P<serial>[^ ]+)?$",
-        re.MULTILINE)
 
     class LsusbDevice(Device):
         def __new__(cls, *args, **kw):
@@ -107,10 +101,11 @@ def find_usb_devices_lsusb():
         def serial(self):
             # Get the serial number from the device and cache it.
             if not hasattr(self, "_serial"):
-                output = subprocess.check_output('lsusb -D %s' % (self.path,), shell=True, stderr=subprocess.STDOUT)
-                bits = lsusb_serial_regex.search(output)
-                assert bits, "%s %r\n%s" % (self.path, output, output)
-                self._serial = bits.group("serial")
+                serialpath = os.path.join(self.syspaths[0], "serial")
+                if not os.path.exists(serialpath):
+                    self._serial = None
+                else:
+                    self._serial = open(serialpath, "r").read().strip()
             return self._serial
 
         @property
@@ -123,9 +118,8 @@ def find_usb_devices_lsusb():
             return bool(self.drivers())
 
         def drivers(self):
-            syspaths = os.path.join(self.syspaths)
             drivers = {}
-            for path in syspaths[1:]:
+            for path in self.syspaths[1:]:
                 driver_path = os.path.join(path, "driver")
                 if os.path.exists(driver_path):
                     drivers[path] = os.readlink(driver_path)
@@ -143,8 +137,8 @@ def find_usb_devices_lsusb():
 
         vid = int(bits.group('vid'), base=16)
         pid = int(bits.group('pid'), base=16)
-        bus = int(bits.group('bus'), base=16)
-        address = int(bits.group('address'), base=16)
+        bus = int(bits.group('bus'), base=10)
+        address = int(bits.group('address'), base=10)
         devobjs.append(LsusbDevice(
             vid=vid, pid=pid, path=Path(bus=bus, address=address),
             ))
@@ -218,7 +212,8 @@ def test_libusb_and_lsusb_equal():
         print "%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers())
         assert libobj.vid == lsobj.vid, "%r == %r" % (libobj.vid, lsobj.vid)
         assert libobj.pid == lsobj.pid, "%r == %r" % (libobj.pid, lsobj.pid)
-        assert libobj.serial == lsobj.serial, "%r == %r" % (libobj.serial, lsobj.serial)
+        if libobj.serial:
+            assert libobj.serial == lsobj.serial, "%r == %r" % (libobj.serial, lsobj.serial)
         assert libobj.path == lsobj.path, "%r == %r" % (libobj.path, lsobj.path)
 
         lsobj_inuse = lsobj.inuse()
@@ -229,6 +224,11 @@ def test_libusb_and_lsusb_equal():
 
 test_libusb_and_lsusb_equal()
 
+BOARD_TYPES = ['opsis', 'atlys']
+BOARD_STATES = ['unconfigured', 'jtag', 'operational']
+
+Board = namedtuple("Board", ["dev", "type", "state"])
+
 
 import argparse
 parser = argparse.ArgumentParser(description=__doc__)
@@ -236,23 +236,44 @@ parser.add_argument('--no-modify', help="Don't modify the state of the system in
 
 parser.add_argument('--mac', help='Find board with the given MAC address.')
 parser.add_argument('--dna', help='Find board with the given Device DNA.')
-parser.add_argument('--position', help="""Find board using a given position.
+parser.add_argument('--position', help="""Find board using a given position in the USB structure.
 Example:
  1-2.3 - Bus 1, Port 2 (which is a hub), Port 3
  5-6.7.8 - Bus 5, Port 2 (which is a hub), Port 7 (which is a hub), Port 8 (which is a hub)
+
+While this *should* be static across reboots, but sadly on some machines it isn't :(
 """)
 
 parser.add_argument('--get-usbfs', help='Return the /dev/bus/usb path for a device.')
 parser.add_argument('--get-sysfs', help='Return the /sys/bus/usb/devices path for a device.')
-parser.add_argument('--get-video', help='Get the primary video device path.')
-STATES = ['unconfigured', 'jtag', 'operational']
-parser.add_argument('--get-state', help='Return the state the device is in. Possible states are: %r' % STATES)
+
+parser.add_argument('--get-state', help='Return the state the device is in. Possible states are: %r' % BOARD_STATES)
+parser.add_argument('--get-video-device', help='Get the primary video device path.')
+parser.add_argument('--get-serial-device', help='Get the serial device path.')
+
+parser.add_argument('--use-hardware-serial', help='Use the hardware serial port on the Atlys board.')
 
 parser.add_argument('--load-firmware', help='Load the firmware file onto the device.')
 
+devices = find_usb_devices_lsusb()
+for device in devices:
+    # Digilent Atlys board with stock "Adept" firmware
+    # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
+    if device.vid == 0x1443 and device.pid == 0x0007:
+        print "Digilent Atlys device at", device, find_sys(device.path)
+        print "fxload -D %s fx2lp -I hw_nexys.hex" % (device.path,)
+
+
 """
-# Digilent Atlys board with stock "Adept" firmware
-# VID=
+
+# Exar USB-UART device on the Digilent Atlys board
+# Bus 003 Device 018: ID 04e2:1410 Exar Corp. 
+# Driver at git+ssh://github.com/mithro/exar-uart-driver.git
+if dev.driver() != "vizzini":
+  # Need to install driver...
+  pass
+
+
 
   - Digilent Atlys board loaded with Nero-USB JTAG firmware
   - Digilent Atlys board loaded with MakeStuff firmware
