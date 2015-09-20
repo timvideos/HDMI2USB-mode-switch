@@ -126,8 +126,13 @@ def find_usb_devices_lsusb():
             return tuple(set(d.split('/')[-1] for d in drivers.values()))
 
         def detach(self):
-            # echo -n %k:1.0 >/sys/bus/usb/drivers/cdc_acm/unbind
-            pass
+            for path in self.syspaths[1:]:
+                driver_path = os.path.join(path, "driver")
+                if os.path.exists(driver_path):
+                    unbind_path = os.path.join(driver_path, "unbind")
+                    assert os.path.exists(unbind_path), unbind_path
+                    interface = os.path.split(path)[-1]
+                    open(unbind_path, "w").write(interface)
 
     devobjs = []
     output = subprocess.check_output('lsusb')
@@ -225,7 +230,18 @@ def test_libusb_and_lsusb_equal():
 test_libusb_and_lsusb_equal()
 
 BOARD_TYPES = ['opsis', 'atlys']
+BOARD_NAMES = {
+    'atlys': "Digilent Atlys",
+    'opsis': "Numato Opsis",
+    }
 BOARD_STATES = ['unconfigured', 'jtag', 'operational']
+
+USBJTAG_MAPPING = {
+    'hw_nexys': 'atlys',
+    'hw_opsis': 'opsis',
+    }
+USBJTAG_RMAPPING = {v:k for k,v in USBJTAG_MAPPING.items()}
+print USBJTAG_RMAPPING
 
 Board = namedtuple("Board", ["dev", "type", "state"])
 
@@ -255,13 +271,43 @@ parser.add_argument('--use-hardware-serial', help='Use the hardware serial port 
 
 parser.add_argument('--load-firmware', help='Load the firmware file onto the device.')
 
-devices = find_usb_devices_lsusb()
-for device in devices:
+boards = []
+for device in find_usb_devices_lsusb():
     # Digilent Atlys board with stock "Adept" firmware
     # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
     if device.vid == 0x1443 and device.pid == 0x0007:
-        print "Digilent Atlys device at", device, find_sys(device.path)
-        print "fxload -D %s fx2lp -I hw_nexys.hex" % (device.path,)
+        boards.append(Board(dev=device, type="atlys", state="unconfigured"))
+
+    # The Numato Opsis will boot in the following mode when the EEPROM is not set up correctly.
+    # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp. CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
+    elif device.vid == 0x04b4 and device.pid == 0x8613:
+        boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+
+    # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
+    # https://github.com/mithro/ixo-usb-jtag
+    # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
+    elif device.vid == 0x16c0 and device.pid == 0x06ad:
+        if device.serial not in USBJTAG_MAPPING:
+            logging.warn("Unknown usb-jtag device!")
+            continue
+        boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serial], state="usbjtag"))
+
+
+for board in boards:
+    print "%s as %s at %s" % (
+        BOARD_NAMES[board.type],
+        board.state,
+        board.dev.path,
+        )
+    if board.dev.inuse():
+        print " Board is currently used by drivers %s" % (board.dev.drivers(),)
+        board.dev.detach()
+
+    if board.state == "unconfigured":
+        print " Configure with 'fxload -t fx2lp -D %s -I %s'" % (
+            board.dev.path,
+            "%s.hex" % USBJTAG_RMAPPING[board.type],
+            )
 
 
 """
@@ -288,11 +334,3 @@ if dev.driver() != "vizzini":
   - Numato Opsis board loaded with HDMI2USB firmware
 
 """
-
-
-
-
-
-
-
-
