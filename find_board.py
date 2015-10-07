@@ -234,14 +234,13 @@ BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
     }
-BOARD_STATES = ['unconfigured', 'jtag', 'operational']
+BOARD_STATES = ['unconfigured', 'jtag', 'serial', 'operational']
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
     'hw_opsis': 'opsis',
     }
 USBJTAG_RMAPPING = {v:k for k,v in USBJTAG_MAPPING.items()}
-print USBJTAG_RMAPPING
 
 Board = namedtuple("Board", ["dev", "type", "state"])
 
