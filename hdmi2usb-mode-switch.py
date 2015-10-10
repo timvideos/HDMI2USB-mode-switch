@@ -9,10 +9,12 @@ could end up under many different VID:PID names based on what firmware is
 currently loaded onto it.
 """
 
+import logging
 import os
 import os.path
-import logging
 import sys
+import time
+import subprocess
 
 from collections import namedtuple
 
@@ -94,6 +96,8 @@ def find_usb_devices_lsusb():
     import re
     import subprocess
 
+    FIND_SYS_CACHE.clear()
+
     # 'Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub'
     lsusb_device_regex = re.compile(
         "Bus (?P<bus>[0-9]+) Device (?P<address>[0-9]+):"
@@ -107,7 +111,7 @@ def find_usb_devices_lsusb():
         def serialno(self):
             # Get the serialno number from the device and cache it.
             if not hasattr(self, "_serialno"):
-                serialnopath = os.path.join(self.syspaths[0], "serialno")
+                serialnopath = os.path.join(self.syspaths[0], "serial")
                 if not os.path.exists(serialnopath):
                     self._serialno = None
                 else:
@@ -221,7 +225,8 @@ def create_sys_mapping():
     return interfaces
 
 
-def find_sys(path, mapping={}):
+FIND_SYS_CACHE = {}
+def find_sys(path, mapping=FIND_SYS_CACHE):
     if not mapping:
         mapping.update(create_sys_mapping())
     return mapping[path]
@@ -249,7 +254,7 @@ BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
     }
-BOARD_STATES = ['unconfigured', 'jtag', 'serialno', 'operational']
+BOARD_STATES = ['unconfigured', 'jtag', 'serial', 'operational']
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
@@ -261,6 +266,27 @@ BoardBase = namedtuple("Board", ["dev", "type", "state"])
 class Board(BoardBase):
     def tty(self):
         return self.dev.tty()
+
+def load_fx2(board, filename, verbose=False):
+    if board.dev.inuse():
+        if verbose:
+            sys.stderr.write("Detaching drivers from board.\n")
+        board.dev.detach()
+
+    filepath = os.path.abspath(filename)
+    assert os.path.exists(filepath), filepath
+
+    cmdline = "fxload -t fx2lp".split()
+    cmdline += ["-D", str(board.dev.path)]
+    cmdline += ["-I", filepath]
+    if verbose:
+        cmdline += ["-v",]
+
+    if verbose:
+        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+
+    subprocess.check_call(cmdline)
+
 
 # Parse the command line name
 cmd = os.path.basename(sys.argv[0])
@@ -308,6 +334,7 @@ if MODE == 'mode-switch':
     parser.add_argument('--load-fx2-firmware', help='Load firmware file onto the Cypress FX2.')
     parser.add_argument('--load-lm32-firmware', help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
 
+    parser.add_argument('--timeout', help='How long to wait in seconds before giving up.', type=float)
 
 args = parser.parse_args()
 
@@ -369,7 +396,7 @@ def find_hdmi2usb_boards(args):
         # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
         elif device.vid == 0x16c0 and device.pid == 0x06ad:
             if device.serialno not in USBJTAG_MAPPING:
-                logging.warn("Unknown usb-jtag device!")
+                logging.warn("Unknown usb-jtag device! %r (%s)", device.serialno, device)
                 continue
             all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serialno], state="jtag"))
 
@@ -417,12 +444,95 @@ def find_hdmi2usb_boards(args):
 
     return filtered_boards
 
-
 boards = find_hdmi2usb_boards(args)
 if not args.all:
     assert len(boards) == 1
 
+MYDIR=os.path.dirname(os.path.abspath(__file__))
+if args.verbose:
+    sys.stderr.write("My root dir: %s\n" % MYDIR)
+
+if MODE == 'mode-switch':
+    for board in boards:
+        # Load gateware onto the FPGA
+        if args.load_gateware:
+            assert args.mode in ("jtag", None)
+            raise NotImplemented("Not yet finished...")
+
+        # Load firmware onto the fx2
+        elif args.load_fx2_firmware:
+            assert args.mode == None
+            print "fxload something...."
+            raise NotImplemented("Not yet finished...")
+
+        # Load firmware onto the lm32
+        elif args.load_lm32_firmware:
+            if board.type == "opsis":
+                assert board.state == "serial"
+            assert board.tty
+            print "flterm something...."
+            raise NotImplemented("Not yet finished...")
+
+        # Else just switch modes
+        elif args.mode:
+            newmode = args.mode
+            if newmode == "jtag":
+                firmware = os.path.join(
+                    "fx2-firmware",
+                    board.type,
+                    "ixo-usb-jtag.hex")
+
+            elif newmode == "serial":
+                assert board.type == "opsis", "serial mode only valid on the opsis."
+                firmware = os.path.join(
+                    "fx2-firmware",
+                    board.type,
+                    "usb-uart.ihx"
+                    )
+            elif newmode == "operational":
+                raise NotImplemented("Not yet finished...")
+
+            if args.verbose:
+                sys.stderr.write("Going from %s to %s\n" % (board.state, newmode))
+                sys.stderr.write("Using firmware %s\n" % firmware)
+
+            if board.state != newmode:
+                old_board = board
+                load_fx2(old_board, firmware, verbose=args.verbose)
+
+                starttime = time.time()
+                while True:
+                    boards = find_hdmi2usb_boards(args)
+
+                    found_board = None
+                    for new_board in boards:
+                        print "%s %s" % (new_board, old_board)
+                        if new_board.type == old_board.type:
+                            if new_board.state == old_board.state:
+                                continue
+                            assert new_board.state == newmode
+                            found_board = new_board
+                            break
+                    else:
+                        time.sleep(1)
+
+                    if found_board:
+                        break
+
+                    if args.timeout and starttime - time.time() > args.timeout:
+                        raise SystemError("Timeout!")
+        
+        # Invalid configuration...
+        else:
+            raise SystemError("Need to specify --load-XXX or --mode")
+
+    boards = find_hdmi2usb_boards(args)
+
 for board in boards:
+    if not (args.get_usbfs or args.get_sysfs or args.get_video_device or args.get_serial_device):
+        print "Found %s boards." % len(boards)
+        break
+
     if args.get_usbfs:
         print board.dev.path
 
@@ -443,7 +553,5 @@ for board in boards:
 """
         if board.state == "unconfigured":
             sys.stderr.write(" Configure with 'fxload -t fx2lp -D %s -I %s'\n" % (
-                board.dev.path,
-                "%s.hex" % USBJTAG_RMAPPING[board.type],
                 ))
 """
