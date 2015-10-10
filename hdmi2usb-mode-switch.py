@@ -10,8 +10,14 @@ currently loaded onto it.
 """
 
 import os
-from collections import namedtuple
+import os.path
 import logging
+import sys
+
+from collections import namedtuple
+
+def assert_in(needle, haystack):
+    assert needle in haystack, "%r not in %r" % (needle, haystack)
 
 PathBase = namedtuple('PathBase', ['bus', 'address'])
 class Path(PathBase):
@@ -32,8 +38,8 @@ class Path(PathBase):
         return cmp(self.path, other)
 
 
-Device = namedtuple('Device', ['path', 'vid', 'pid', 'serial'])
-Device.__str__ = lambda self: "Device(%04x:%04x %s)" % (self.vid, self.pid, [self.path, repr(self.serial)][bool(self.serial)])
+Device = namedtuple('Device', ['path', 'vid', 'pid', 'serialno'])
+Device.__str__ = lambda self: "Device(%04x:%04x %s)" % (self.vid, self.pid, [self.path, repr(self.serialno)][bool(self.serialno)])
 #Device.__cmp__ = lambda a, b: cmp(a.path, b.path)
 
 def find_usb_devices_libusb():
@@ -74,14 +80,14 @@ def find_usb_devices_libusb():
 
     devobjs = []
     for dev in usb.core.find(find_all=True):
-        serial = None
+        serialno = None
         if dev.iSerialNumber > 0:
             try:
-                serial = dev.serial_number
+                serialno = dev.serial_number
             except usb.USBError:
                 pass
 
-        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, serial=serial, path=Path(bus=dev.bus, address=dev.address)))
+        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
     return devobjs
 
 def find_usb_devices_lsusb():
@@ -95,18 +101,18 @@ def find_usb_devices_lsusb():
 
     class LsusbDevice(Device):
         def __new__(cls, *args, **kw):
-            return Device.__new__(cls, *args, serial=None, **kw)
+            return Device.__new__(cls, *args, serialno=None, **kw)
 
         @property
-        def serial(self):
-            # Get the serial number from the device and cache it.
-            if not hasattr(self, "_serial"):
-                serialpath = os.path.join(self.syspaths[0], "serial")
-                if not os.path.exists(serialpath):
-                    self._serial = None
+        def serialno(self):
+            # Get the serialno number from the device and cache it.
+            if not hasattr(self, "_serialno"):
+                serialnopath = os.path.join(self.syspaths[0], "serialno")
+                if not os.path.exists(serialnopath):
+                    self._serialno = None
                 else:
-                    self._serial = open(serialpath, "r").read().strip()
-            return self._serial
+                    self._serialno = open(serialnopath, "r").read().strip()
+            return self._serialno
 
         @property
         def syspaths(self):
@@ -133,6 +139,17 @@ def find_usb_devices_lsusb():
                     assert os.path.exists(unbind_path), unbind_path
                     interface = os.path.split(path)[-1]
                     open(unbind_path, "w").write(interface)
+
+        def tty(self):
+            ttys = []
+            for path in self.syspaths:
+                tty_path = os.path.join(path, "tty")
+                if os.path.exists(tty_path):
+                    names = list(os.listdir(tty_path))
+                    assert len(names) == 1
+                    ttys.append('/dev/'+names[0])
+            return ttys
+
 
     devobjs = []
     output = subprocess.check_output('lsusb')
@@ -217,8 +234,8 @@ def test_libusb_and_lsusb_equal():
         print "%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers())
         assert libobj.vid == lsobj.vid, "%r == %r" % (libobj.vid, lsobj.vid)
         assert libobj.pid == lsobj.pid, "%r == %r" % (libobj.pid, lsobj.pid)
-        if libobj.serial:
-            assert libobj.serial == lsobj.serial, "%r == %r" % (libobj.serial, lsobj.serial)
+        if libobj.serialno:
+            assert libobj.serialno == lsobj.serialno, "%r == %r" % (libobj.serialno, lsobj.serialno)
         assert libobj.path == lsobj.path, "%r == %r" % (libobj.path, lsobj.path)
 
         lsobj_inuse = lsobj.inuse()
@@ -232,7 +249,7 @@ BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
     }
-BOARD_STATES = ['unconfigured', 'jtag', 'serial', 'operational']
+BOARD_STATES = ['unconfigured', 'jtag', 'serialno', 'operational']
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
@@ -240,12 +257,29 @@ USBJTAG_MAPPING = {
     }
 USBJTAG_RMAPPING = {v:k for k,v in USBJTAG_MAPPING.items()}
 
-Board = namedtuple("Board", ["dev", "type", "state"])
+BoardBase = namedtuple("Board", ["dev", "type", "state"])
+class Board(BoardBase):
+    def tty(self):
+        return self.dev.tty()
 
+# Parse the command line name
+cmd = os.path.basename(sys.argv[0])
+if cmd.endswith('.py'):
+    cmd = cmd.rsplit('.', 1)[0]
 
+BOARD, MODE = cmd.split('-', 1)
+assert_in(BOARD, BOARD_TYPES+['hdmi2usb'])
+POSSIBLE_MODES = ['find-board', 'mode-switch']
+assert_in(MODE, POSSIBLE_MODES)
+
+# Parse the arguments
 import argparse
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--no-modify', help="Don't modify the state of the system in any way.")
+
+parser.add_argument('--verbose', '-v', action='count', help='Output more information.') #, aliases=['--debug', '-d'])
+
+if BOARD == "hdmi2usb":
+    parser.add_argument('--by-type', help='Find board with a given type.', choices=BOARD_TYPES)
 
 parser.add_argument('--by-mac', help='Find board with the given MAC address.')
 parser.add_argument('--by-dna', help='Find board with the given Device DNA.')
@@ -256,111 +290,160 @@ Example:
 
 While this *should* be static across reboots, but sadly on some machines it isn't :(
 """)
+parser.add_argument('--by-mode', help=argparse.SUPPRESS) # help='Find board in a given mode.', )
 
-parser.add_argument('--get-usbfs', help='Return the /dev/bus/usb path for a device.')
-parser.add_argument('--get-sysfs', help='Return the /sys/bus/usb/devices path for a device.')
+parser.add_argument('--all', help='Do operation on all boards, otherwise will error if multiple boards are found.')
 
-parser.add_argument('--get-state', help='Return the state the device is in. Possible states are: %r' % BOARD_STATES)
-parser.add_argument('--get-video-device', help='Get the primary video device path.')
-parser.add_argument('--get-serial-device', help='Get the serial device path.')
+parser.add_argument('--get-usbfs', action='store_true', help='Return the /dev/bus/usb path for a device.')
+parser.add_argument('--get-sysfs', action='store_true', help='Return the /sys/bus/usb/devices path for a device.')
+parser.add_argument('--get-state', action='store_true', help='Return the state the device is in. Possible states are: %r' % BOARD_STATES)
+parser.add_argument('--get-video-device', action='store_true', help='Get the primary video device path.')
+parser.add_argument('--get-serial-device', action='store_true', help='Get the serial device path.')
 
-parser.add_argument('--use-hardware-serial', help='Use the hardware serial port on the Atlys board.')
+parser.add_argument('--prefer-hardware-serial', help='Prefer the hardware serial port on the Atlys board.')
 
-parser.add_argument('--load-firmware', help='Load the firmware file onto the device.')
+if MODE == 'mode-switch':
+    parser.add_argument('--mode', help='Switch mode to given state.', choices=BOARD_STATES)
+    parser.add_argument('--load-gateware', help='Load gateware onto the FPGA.')
+    parser.add_argument('--load-fx2-firmware', help='Load firmware file onto the Cypress FX2.')
+    parser.add_argument('--load-lm32-firmware', help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
 
-boards = []
-for device in find_usb_devices_lsusb():
-    # Digilent Atlys board with stock "Adept" firmware
-    # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
-    if device.vid == 0x1443 and device.pid == 0x0007:
-        boards.append(Board(dev=device, type="atlys", state="unconfigured"))
 
-    # The Numato Opsis will boot in the following mode when the EEPROM is not
-    # set up correctly.
-    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
-    # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp. CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
-    elif device.vid == 0x04b4 and device.pid == 0x8613:
-        boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+args = parser.parse_args()
 
-    # The preproduction Numato Opsis shipped to Champions will boot into this
-    # mode by default.
-    # The production Numato Opsis will fallback to booting in the following
-    # mode when the FPGA doesn't have EEPROM emulation working.
-    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#unconfigured-mode
-    # Bus 003 Device 091: ID 2a19:5440 Numato Opsis (Unconfigured Mode)
-    elif device.vid == 0x2A19 and device.pid == 0x5440:
-        boards.append(Board(dev=device, type="opsis", state="unconfigured"))
 
-    # The production Numato Opsis will boot in this mode when SW1 is held
-    # during boot, or when held for 5 seconds with correctly configured FPGA
-    # gateware.
-    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#usb-jtag-and-usb-uart-mode
-    # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (JTAG and USB Mode)
-    elif device.vid == 0x2A19 and device.pid == 0x5441:
-        boards.append(Board(dev=device, type="opsis", state="jtag"))
+if BOARD != "hdmi2usb":
+    args.by_type = BOARD
+if args.by_type:
+    assert_in(args.by_type, BOARD_TYPES)
 
-    # The production Numato Opsis will boot in this mode by default.
-    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#hdmi2usb.tv-mode
-    # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (HDMI2USB.tv mode)
-    elif device.vid == 0x2A19 and device.pid == 0x5442:
-        boards.append(Board(dev=device, type="opsis", state="operational"))
+def find_hdmi2usb_boards(args):
+    all_boards = []
+    exart_uarts = []
+    for device in find_usb_devices_lsusb():
+        # Digilent Atlys board with stock "Adept" firmware
+        # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
+        if device.vid == 0x1443 and device.pid == 0x0007:
+            all_boards.append(Board(dev=device, type="atlys", state="unconfigured"))
 
-    # fx2lib CDC-ACM example
-    # Bus 003 Device 091: ID 04b4:1004 Cypress Semiconductor Corp.
-    # [1477170.025176] usb 3-4.4: Product: There
-    # [1477170.025178] usb 3-4.4: Manufacturer: Hi
-    # [1477170.025179] usb 3-4.4: SerialNumber: ffff001ec0f1419b
-    elif device.vid == 0x04b4 and device.pid == 0x1004:
-        boards.append(Board(dev=device, type="opsis", state="serial"))
+        # The Numato Opsis will boot in the following mode when the EEPROM is not
+        # set up correctly.
+        # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
+        # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp. CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
+        elif device.vid == 0x04b4 and device.pid == 0x8613:
+            all_boards.append(Board(dev=device, type="opsis", state="unconfigured"))
 
-    # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
-    # https://github.com/mithro/ixo-usb-jtag
-    # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
-    elif device.vid == 0x16c0 and device.pid == 0x06ad:
-        if device.serial not in USBJTAG_MAPPING:
-            logging.warn("Unknown usb-jtag device!")
+        # The preproduction Numato Opsis shipped to Champions will boot into this
+        # mode by default.
+        # The production Numato Opsis will fallback to booting in the following
+        # mode when the FPGA doesn't have EEPROM emulation working.
+        # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#unconfigured-mode
+        # Bus 003 Device 091: ID 2a19:5440 Numato Opsis (Unconfigured Mode)
+        elif device.vid == 0x2A19 and device.pid == 0x5440:
+            all_boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+
+        # The production Numato Opsis will boot in this mode when SW1 is held
+        # during boot, or when held for 5 seconds with correctly configured FPGA
+        # gateware.
+        # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#usb-jtag-and-usb-uart-mode
+        # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (JTAG and USB Mode)
+        elif device.vid == 0x2A19 and device.pid == 0x5441:
+            all_boards.append(Board(dev=device, type="opsis", state="jtag"))
+
+        # The production Numato Opsis will boot in this mode by default.
+        # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#hdmi2usb.tv-mode
+        # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (HDMI2USB.tv mode)
+        elif device.vid == 0x2A19 and device.pid == 0x5442:
+            all_boards.append(Board(dev=device, type="opsis", state="operational"))
+
+        # fx2lib CDC-ACM example
+        # Bus 003 Device 091: ID 04b4:1004 Cypress Semiconductor Corp.
+        # [1477170.025176] usb 3-4.4: Product: There
+        # [1477170.025178] usb 3-4.4: Manufacturer: Hi
+        # [1477170.025179] usb 3-4.4: SerialNumber: ffff001ec0f1419b
+        elif device.vid == 0x04b4 and device.pid == 0x1004:
+            all_boards.append(Board(dev=device, type="opsis", state="serial"))
+
+        # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
+        # https://github.com/mithro/ixo-usb-jtag
+        # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
+        elif device.vid == 0x16c0 and device.pid == 0x06ad:
+            if device.serialno not in USBJTAG_MAPPING:
+                logging.warn("Unknown usb-jtag device!")
+                continue
+            all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serialno], state="jtag"))
+
+    # FIXME: This is a horrible hack!?@
+    # Patch the Atlys board so the exart_uart is associated with it.
+    if exart_uarts:
+        atlys_boards = [b for b in all_boards if b.type == "atlys"]
+        sys.stderr.write(" Found exart-uarts at %s associating with Atlys at %s\n" % (
+            exart_uarts, atlys_boards))
+        assert len(exart_uarts) == len(atlys_boards)
+        assert len(atlys_boards) == 1
+
+        def extra_tty(uart=exart_uarts[0], board=atlys_boards[0], prefer=args.prefer_hardware_serial):
+            if prefer:
+                return uart.tty + board.dev.tty
+            else:
+                return board.dev.tty + uart.tty
+
+        atlys_boards[0].tty = extra_tty
+
+    # Filter out the boards we don't care about
+    filtered_boards = []
+    for board in all_boards:
+        if args.verbose > 0:
+            sys.stderr.write("%s in '%s' mode at %s\n" % (
+                BOARD_NAMES[board.type],
+                board.state,
+                board.dev.path,
+                ))
+            for sp in board.dev.syspaths:
+                sys.stderr.write(" %s\n" % (sp,))
+
+            if board.dev.inuse():
+                sys.stderr.write(" Board is currently used by drivers %s\n" % (board.dev.drivers(),))
+
+            if board.tty():
+                sys.stderr.write(" Serial port at %s\n" % ", ".join(board.tty()))
+
+        if args.by_type and args.by_type != board.type:
+            if args.verbose > 0:
+                sys.stderr.write(" Ignore as not type %s\n" % (args.by_type,))
             continue
-        boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serial], state="jtag"))
 
+        filtered_boards.append(board)
+
+    return filtered_boards
+
+
+boards = find_hdmi2usb_boards(args)
+if not args.all:
+    assert len(boards) == 1
 
 for board in boards:
-    print "%s as %s at %s" % (
-        BOARD_NAMES[board.type],
-        board.state,
-        board.dev.path,
-        )
-    if board.dev.inuse():
-        print " Board is currently used by drivers %s" % (board.dev.drivers(),)
-        board.dev.detach()
+    if args.get_usbfs:
+        print board.dev.path
 
-    if board.state == "unconfigured":
-        print " Configure with 'fxload -t fx2lp -D %s -I %s'" % (
-            board.dev.path,
-            "%s.hex" % USBJTAG_RMAPPING[board.type],
-            )
+    if args.get_sysfs:
+        print "\n".join(board.dev.syspaths)
+
+    if args.get_state:
+        print board.state
+
+    if args.get_video_device:
+        assert board.state == "operational"
+        print "???"
+
+    if args.get_serial_device:
+        print board.tty()[0]
 
 
 """
-
-# Exar USB-UART device on the Digilent Atlys board
-# Bus 003 Device 018: ID 04e2:1410 Exar Corp. 
-# Driver at git+ssh://github.com/mithro/exar-uart-driver.git
-if dev.driver() != "vizzini":
-  # Need to install driver...
-  pass
-
-
-
-  - Digilent Atlys board loaded with Nero-USB JTAG firmware
-  - Digilent Atlys board loaded with MakeStuff firmware
-  - Digilent Atlys board loaded with HDMI2USB "unconfigured" firmware
-  - Digilent Atlys board loaded with HDMI2USB "configured" firmware
-
-  - Unconfigured Cypress FX2, could be a Numato Opsis
-
-  - Numato Opsis board with no FX2 firmware loaded
-  - Numato Opsis board loaded with Nero-USB JTAG firmware
-  - Numato Opsis board loaded with MakeStuff firmware
-  - Numato Opsis board loaded with HDMI2USB firmware
-
+        if board.state == "unconfigured":
+            sys.stderr.write(" Configure with 'fxload -t fx2lp -D %s -I %s'\n" % (
+                board.dev.path,
+                "%s.hex" % USBJTAG_RMAPPING[board.type],
+                ))
 """
