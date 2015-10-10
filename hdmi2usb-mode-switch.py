@@ -227,8 +227,6 @@ def test_libusb_and_lsusb_equal():
             assert libobj_inuse == lsobj_inuse, "%r == %r" % (libobj_inuse, lsobj_inuse)
 
 
-test_libusb_and_lsusb_equal()
-
 BOARD_TYPES = ['opsis', 'atlys']
 BOARD_NAMES = {
     'atlys': "Digilent Atlys",
@@ -249,9 +247,9 @@ import argparse
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--no-modify', help="Don't modify the state of the system in any way.")
 
-parser.add_argument('--mac', help='Find board with the given MAC address.')
-parser.add_argument('--dna', help='Find board with the given Device DNA.')
-parser.add_argument('--position', help="""Find board using a given position in the USB structure.
+parser.add_argument('--by-mac', help='Find board with the given MAC address.')
+parser.add_argument('--by-dna', help='Find board with the given Device DNA.')
+parser.add_argument('--by-position', help="""Find board using a given position in the USB structure.
 Example:
  1-2.3 - Bus 1, Port 2 (which is a hub), Port 3
  5-6.7.8 - Bus 5, Port 2 (which is a hub), Port 7 (which is a hub), Port 8 (which is a hub)
@@ -277,10 +275,43 @@ for device in find_usb_devices_lsusb():
     if device.vid == 0x1443 and device.pid == 0x0007:
         boards.append(Board(dev=device, type="atlys", state="unconfigured"))
 
-    # The Numato Opsis will boot in the following mode when the EEPROM is not set up correctly.
+    # The Numato Opsis will boot in the following mode when the EEPROM is not
+    # set up correctly.
+    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
     # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp. CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
     elif device.vid == 0x04b4 and device.pid == 0x8613:
         boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+
+    # The preproduction Numato Opsis shipped to Champions will boot into this
+    # mode by default.
+    # The production Numato Opsis will fallback to booting in the following
+    # mode when the FPGA doesn't have EEPROM emulation working.
+    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#unconfigured-mode
+    # Bus 003 Device 091: ID 2a19:5440 Numato Opsis (Unconfigured Mode)
+    elif device.vid == 0x2A19 and device.pid == 0x5440:
+        boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+
+    # The production Numato Opsis will boot in this mode when SW1 is held
+    # during boot, or when held for 5 seconds with correctly configured FPGA
+    # gateware.
+    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#usb-jtag-and-usb-uart-mode
+    # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (JTAG and USB Mode)
+    elif device.vid == 0x2A19 and device.pid == 0x5441:
+        boards.append(Board(dev=device, type="opsis", state="jtag"))
+
+    # The production Numato Opsis will boot in this mode by default.
+    # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#hdmi2usb.tv-mode
+    # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (HDMI2USB.tv mode)
+    elif device.vid == 0x2A19 and device.pid == 0x5442:
+        boards.append(Board(dev=device, type="opsis", state="operational"))
+
+    # fx2lib CDC-ACM example
+    # Bus 003 Device 091: ID 04b4:1004 Cypress Semiconductor Corp.
+    # [1477170.025176] usb 3-4.4: Product: There
+    # [1477170.025178] usb 3-4.4: Manufacturer: Hi
+    # [1477170.025179] usb 3-4.4: SerialNumber: ffff001ec0f1419b
+    elif device.vid == 0x04b4 and device.pid == 0x1004:
+        boards.append(Board(dev=device, type="opsis", state="serial"))
 
     # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
     # https://github.com/mithro/ixo-usb-jtag
@@ -289,7 +320,7 @@ for device in find_usb_devices_lsusb():
         if device.serial not in USBJTAG_MAPPING:
             logging.warn("Unknown usb-jtag device!")
             continue
-        boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serial], state="usbjtag"))
+        boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serial], state="jtag"))
 
 
 for board in boards:
