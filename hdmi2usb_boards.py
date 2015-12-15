@@ -23,9 +23,10 @@ def assert_in(needle, haystack):
 
 PathBase = namedtuple('PathBase', ['bus', 'address'])
 class Path(PathBase):
-    def __init__(self, *args, **kw):
-        PathBase.__init__(self, *args, **kw)
-        assert os.path.exists(self.path), "%r %r" % (self.path, self)
+    def __new__(cls, *args, **kw):
+        r = PathBase.__new__(cls, *args, **kw)
+        assert os.path.exists(r.path), "%r %r" % (r.path, r)
+        return r
 
     @property
     def path(self):
@@ -158,6 +159,7 @@ def find_usb_devices_lsusb():
     devobjs = []
     output = subprocess.check_output('lsusb')
     for line in output.splitlines():
+        line = line.decode('utf-8')
         bits = lsusb_device_regex.match(line)
         assert bits, repr(line)
 
@@ -236,7 +238,7 @@ def test_libusb_and_lsusb_equal():
     libusb_devices = find_usb_devices_libusb()
     lsusb_devices = find_usb_devices_lsusb()
     for libobj, lsobj in zip(sorted(libusb_devices), sorted(lsusb_devices)):
-        print "%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers())
+        print("%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers()))
         assert libobj.vid == lsobj.vid, "%r == %r" % (libobj.vid, lsobj.vid)
         assert libobj.pid == lsobj.pid, "%r == %r" % (libobj.pid, lsobj.pid)
         if libobj.serialno:

@@ -124,7 +124,7 @@ if MODE == 'mode-switch':
         # Load firmware onto the fx2
         elif args.load_fx2_firmware:
             assert args.mode == None
-            print "fxload something...."
+            print("fxload something....")
             raise NotImplemented("Not yet finished...")
 
         # Load firmware onto the lm32
@@ -132,7 +132,7 @@ if MODE == 'mode-switch':
             if board.type == "opsis":
                 assert board.state == "serial"
             assert board.tty
-            print "flterm something...."
+            print("flterm something....")
             raise NotImplemented("Not yet finished...")
 
         # Else just switch modes
@@ -176,7 +176,7 @@ if MODE == 'mode-switch':
 
                     found_board = None
                     for new_board in boards:
-                        print "%s %s" % (new_board, old_board)
+                        print("%s %s" % (new_board, old_board))
                         if new_board.type == old_board.type:
                             if new_board.state == old_board.state:
                                 continue
@@ -200,24 +200,24 @@ if MODE == 'mode-switch':
 
 for board in boards:
     if not (args.get_usbfs or args.get_sysfs or args.get_video_device or args.get_serial_device):
-        print "Found %s boards." % len(boards)
+        print("Found %s boards." % len(boards))
         break
 
     if args.get_usbfs:
-        print board.dev.path
+        print(board.dev.path)
 
     if args.get_sysfs:
-        print "\n".join(board.dev.syspaths)
+        print("\n".join(board.dev.syspaths))
 
     if args.get_state:
-        print board.state
+        print(board.state)
 
     if args.get_video_device:
         assert board.state == "operational"
-        print "???"
+        print("???")
 
     if args.get_serial_device:
-        print board.tty()[0]
+        print(board.tty()[0])
 
 
 """
