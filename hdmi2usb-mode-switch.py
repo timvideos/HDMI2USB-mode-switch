@@ -34,7 +34,7 @@ hdmi2usb_boards.assert_in(MODE, POSSIBLE_MODES)
 import argparse
 parser = argparse.ArgumentParser(description=__doc__)
 
-parser.add_argument('--verbose', '-v', action='count', help='Output more information.') #, aliases=['--debug', '-d'])
+parser.add_argument('--verbose', '-v', action='count', help='Output more information.', default=0) #, aliases=['--debug', '-d'])
 
 if BOARD == "hdmi2usb":
     parser.add_argument('--by-type', help='Find board with a given type.', choices=hdmi2usb_boards.BOARD_TYPES)
@@ -62,8 +62,13 @@ parser.add_argument('--prefer-hardware-serial', help='Prefer the hardware serial
 
 if MODE == 'mode-switch':
     parser.add_argument('--mode', help='Switch mode to given state.', choices=hdmi2usb_boards.BOARD_STATES)
+    # FPGA
     parser.add_argument('--load-gateware', help='Load gateware onto the FPGA.')
+    parser.add_argument('--flash-gateware', help='Flash gateware onto the SPI flash which the FPGA boots from.')
+    # Cypress FX2
     parser.add_argument('--load-fx2-firmware', help='Load firmware file onto the Cypress FX2.')
+    parser.add_argument('--flash-fx2-eeprom', help='Flash the FX2 eeprom with data.')
+    #
     parser.add_argument('--load-lm32-firmware', help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
 
     parser.add_argument('--timeout', help='How long to wait in seconds before giving up.', type=float)
@@ -115,28 +120,13 @@ if args.verbose:
     sys.stderr.write("My root dir: %s\n" % MYDIR)
 
 if MODE == 'mode-switch':
+    assert len(boards) == 1
     for board in boards:
-        # Load gateware onto the FPGA
-        if args.load_gateware:
-            assert args.mode in ("jtag", None)
-            raise NotImplemented("Not yet finished...")
+        if args.load_gateware and not args.mode:
+            args.mode = 'jtag'
 
-        # Load firmware onto the fx2
-        elif args.load_fx2_firmware:
-            assert args.mode == None
-            print("fxload something....")
-            raise NotImplemented("Not yet finished...")
-
-        # Load firmware onto the lm32
-        elif args.load_lm32_firmware:
-            if board.type == "opsis":
-                assert board.state == "serial"
-            assert board.tty
-            print("flterm something....")
-            raise NotImplemented("Not yet finished...")
-
-        # Else just switch modes
-        elif args.mode:
+        # Switch modes
+        if args.mode:
             newmode = args.mode
             if newmode == "jtag":
                 firmware = os.path.join(
@@ -149,14 +139,14 @@ if MODE == 'mode-switch':
                 firmware = os.path.join(
                     "fx2-firmware",
                     board.type,
-                    "usb-uart.ihx"
-                    )
+                    "usb-uart.ihx")
+
             elif newmode == "eeprom":
                 firmware = os.path.join(
                     "fx2-firmware",
                     board.type,
-                    "eeprom.ihx"
-                    )
+                    "eeprom.ihx")
+
             elif newmode == "operational":
                 raise NotImplemented("Not yet finished...")
             else:
@@ -187,11 +177,28 @@ if MODE == 'mode-switch':
                         time.sleep(1)
 
                     if found_board:
+                        board = found_board
                         break
 
                     if args.timeout and starttime - time.time() > args.timeout:
                         raise SystemError("Timeout!")
         
+        # Load firmware onto the fx2
+        if args.load_fx2_firmware:
+            hdmi2usb_boards.load_fx2(board, args.load_fx2_firmware, verbose=args.verbose)
+
+        # Load gateware onto the FPGA
+        elif args.load_gateware:
+            hdmi2usb_boards.load_fpga(board, args.load_gateware, verbose=args.verbose)
+
+        # Load firmware onto the lm32
+        elif args.load_lm32_firmware:
+            if board.type == "opsis":
+                assert board.state == "serial"
+            assert board.tty
+            print("flterm something....")
+            raise NotImplemented("Not yet finished...")
+
         # Invalid configuration...
         else:
             raise SystemError("Need to specify --load-XXX or --mode")

@@ -263,11 +263,17 @@ USBJTAG_MAPPING = {
     'hw_opsis': 'opsis',
     }
 USBJTAG_RMAPPING = {v:k for k,v in USBJTAG_MAPPING.items()}
+OPENOCD_MAPPING = {
+    'atlys': "board/digilent_atlys.cfg",
+    'opsis': "board/numato_opsis.cfg",
+    }
+
 
 BoardBase = namedtuple("Board", ["dev", "type", "state"])
 class Board(BoardBase):
     def tty(self):
         return self.dev.tty()
+
 
 def load_fx2(board, filename, verbose=False):
     if board.dev.inuse():
@@ -288,6 +294,36 @@ def load_fx2(board, filename, verbose=False):
         sys.stderr.write("Running %r\n" % " ".join(cmdline))
 
     subprocess.check_call(cmdline)
+
+
+def load_fpga(board, filename, verbose=False):
+    assert board.state == "jtag", board
+    assert not board.dev.inuse()
+    assert board.type in OPENOCD_MAPPING
+
+    filepath = os.path.abspath(filename)
+    assert os.path.exists(filepath), filepath
+
+    script = "; ".join([
+        "init",
+        "pld load 0 {}".format(filepath),
+        "exit",
+        ])
+
+    subprocess.check_call(["openocd", "-f", OPENOCD_MAPPING[board.type], "-c", script])
+
+"""
+    def flash(self, address, data):
+        flash_proxy = self.find_flash_proxy()
+        script = "; ".join([
+            "init",
+            "jtagspi_init 0 {}".format(flash_proxy),
+            "jtagspi_program {} 0x{:x}".format(data, address),
+            "fpga_program",
+            "exit"
+        ])
+        subprocess.call(["openocd", "-f", self.config, "-c", script])
+"""
 
 
 def find_boards():
