@@ -89,7 +89,7 @@ def find_hdmi2usb_boards(args):
     for board in all_boards:
         if args.verbose > 0:
             sys.stderr.write("%s in '%s' mode at %s\n" % (
-                BOARD_NAMES[board.type],
+                hdmi2usb_boards.BOARD_NAMES[board.type],
                 board.state,
                 board.dev.path,
                 ))
