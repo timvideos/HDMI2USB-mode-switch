@@ -113,7 +113,7 @@ def find_hdmi2usb_boards(args):
 
 boards = find_hdmi2usb_boards(args)
 if not args.all:
-    assert len(boards) == 1
+    assert len(boards) == 1, boards
 
 MYDIR=os.path.dirname(os.path.abspath(__file__))
 if args.verbose:
@@ -122,7 +122,7 @@ if args.verbose:
 if MODE == 'mode-switch':
     assert len(boards) == 1
     for board in boards:
-        if args.load_gateware and not args.mode:
+        if (args.load_gateware or args.flash_gateware) and not args.mode:
             args.mode = 'jtag'
 
         # Switch modes
@@ -152,11 +152,11 @@ if MODE == 'mode-switch':
             else:
                 raise NotImplemented("Unknown mode...")
 
-            if args.verbose:
-                sys.stderr.write("Going from %s to %s\n" % (board.state, newmode))
-                sys.stderr.write("Using firmware %s\n" % firmware)
-
             if board.state != newmode:
+                if args.verbose:
+                    sys.stderr.write("Going from %s to %s\n" % (board.state, newmode))
+                    sys.stderr.write("Using FX2 firmware %s\n" % firmware)
+
                 old_board = board
                 hdmi2usb_boards.load_fx2(old_board, firmware, verbose=args.verbose)
 
@@ -182,6 +182,9 @@ if MODE == 'mode-switch':
 
                     if args.timeout and starttime - time.time() > args.timeout:
                         raise SystemError("Timeout!")
+            else:
+                if args.verbose:
+                    sys.stderr.write("Board already in required mode (%s)\n" % (board.state,))
         
         # Load firmware onto the fx2
         if args.load_fx2_firmware:
@@ -190,6 +193,9 @@ if MODE == 'mode-switch':
         # Load gateware onto the FPGA
         elif args.load_gateware:
             hdmi2usb_boards.load_fpga(board, args.load_gateware, verbose=args.verbose)
+
+        elif args.flash_gateware:
+            hdmi2usb_boards.flash_fpga(board, args.flash_gateware, verbose=args.verbose)
 
         # Load firmware onto the lm32
         elif args.load_lm32_firmware:

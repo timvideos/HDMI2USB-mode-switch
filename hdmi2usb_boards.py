@@ -270,7 +270,10 @@ OPENOCD_MAPPING = {
     'atlys': "board/digilent_atlys.cfg",
     'opsis': "board/numato_opsis.cfg",
     }
-
+OPENOCD_FLASHPROXY = {
+    'opsis': 'flash_proxy/opsis/bscan_spi_xc6slx45t.bit',
+    'atlys': 'flash_proxy/atlys/bscan_spi_xc6slx45.bit',
+}
 
 BoardBase = namedtuple("Board", ["dev", "type", "state"])
 class Board(BoardBase):
@@ -299,6 +302,13 @@ def load_fx2(board, filename, verbose=False):
     subprocess.check_call(cmdline)
 
 
+def flash_fx2(board, filename, verbose=False):
+    assert board.state == "eeprom", board
+    assert not board.dev.inuse()
+
+    assert board.type == "opsis", "Only support flashing the Opsis for now (not %s)." % board.type
+
+
 def load_fpga(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
@@ -313,20 +323,46 @@ def load_fpga(board, filename, verbose=False):
         "exit",
         ])
 
-    subprocess.check_call(["openocd", "-f", OPENOCD_MAPPING[board.type], "-c", script])
+    cmdline = ["openocd"]
+    cmdline += ["-f", OPENOCD_MAPPING[board.type]]
+    cmdline += ["-c", script]
 
-"""
-    def flash(self, address, data):
-        flash_proxy = self.find_flash_proxy()
-        script = "; ".join([
-            "init",
-            "jtagspi_init 0 {}".format(flash_proxy),
-            "jtagspi_program {} 0x{:x}".format(data, address),
-            "fpga_program",
-            "exit"
-        ])
-        subprocess.call(["openocd", "-f", self.config, "-c", script])
-"""
+    if verbose == 0:
+        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
+    else:
+        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+        subprocess.check_call(cmdline)
+
+
+def flash_fpga(board, filename, verbose=False):
+    assert board.state == "jtag", board
+    assert not board.dev.inuse()
+    assert board.type == "opsis", "Only support flashing the Opsis for now (not %s)." % board.type
+
+    filepath = os.path.abspath(filename)
+    assert os.path.exists(filepath), filepath
+
+    assert board.type in OPENOCD_FLASHPROXY
+    proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
+    assert os.path.exists(proxypath), proxypath
+
+    script = "; ".join([
+        "init",
+        "jtagspi_init 0 {}".format(proxypath),
+        #"jtagspi_program {} 0x{:x}".format(data, address),
+        #"fpga_program",
+        "exit"
+    ])
+
+    cmdline = ["openocd"]
+    cmdline += ["-f", OPENOCD_MAPPING[board.type]]
+    cmdline += ["-c", script]
+
+    if verbose == 0:
+        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
+    else:
+        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+        subprocess.check_call(cmdline)
 
 
 def find_boards():
