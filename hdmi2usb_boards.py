@@ -317,20 +317,23 @@ def load_fpga(board, filename, verbose=False):
     filepath = os.path.abspath(filename)
     assert os.path.exists(filepath), filepath
 
-    script = "; ".join([
-        "init",
-        "pld load 0 {}".format(filepath),
-        "exit",
-        ])
+    script = ["init"]
+    if verbose:
+        script += ["xc6s_print_dna xc6s.tap"]
+
+    script += ["pld load 0 {}".format(filepath)]
+    script += ["exit"]
 
     cmdline = ["openocd"]
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
-    cmdline += ["-c", script]
+    cmdline += ["-c", "; ".join(script)]
 
     if verbose == 0:
         subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
     else:
-        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+        if verbose > 1:
+            cmdline += ["--debug={}".format(verbose - 2)]
+        sys.stderr.write("Running %r\n" % cmdline)
         subprocess.check_call(cmdline)
 
 
@@ -346,22 +349,37 @@ def flash_fpga(board, filename, verbose=False):
     proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
     assert os.path.exists(proxypath), proxypath
 
-    script = "; ".join([
-        "init",
-        "jtagspi_init 0 {}".format(proxypath),
+    script = ["init"]
+    if verbose:
+        script += ["xc6s_print_dna xc6s.tap"]
+
+    script += ["jtagspi_init 0 {}".format(proxypath)]
+
+    if verbose > 1:
+        script += ["flash banks"]
+        script += ["flash list"]
+    if verbose > 2:
+        script += ["flash info 0"]
+
+    script += ["flash read_bank 0 backup.bit 0 0x01000000"]
+
+    script += [
         #"jtagspi_program {} 0x{:x}".format(data, address),
         #"fpga_program",
         "exit"
-    ])
+    ]
 
     cmdline = ["openocd"]
+
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
-    cmdline += ["-c", script]
+    cmdline += ["-c", "; ".join(script)]
 
     if verbose == 0:
         subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
     else:
-        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+        if verbose > 1:
+            cmdline += ["--debug={}".format(verbose - 2)]
+        sys.stderr.write("Running %r\n" % cmdline)
         subprocess.check_call(cmdline)
 
 
