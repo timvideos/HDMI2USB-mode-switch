@@ -166,7 +166,6 @@ if MODE == 'mode-switch':
 
                     found_board = None
                     for new_board in boards:
-                        print("%s %s" % (new_board, old_board))
                         if new_board.type == old_board.type:
                             if new_board.state == old_board.state:
                                 continue
@@ -182,6 +181,10 @@ if MODE == 'mode-switch':
 
                     if args.timeout and starttime - time.time() > args.timeout:
                         raise SystemError("Timeout!")
+
+                if args.verbose:
+                    sys.stderr.write("Board was %r\n" % (old_board,))
+                    sys.stderr.write("Board now %r\n" % (board,))
             else:
                 if args.verbose:
                     sys.stderr.write("Board already in required mode (%s)\n" % (board.state,))
