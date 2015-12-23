@@ -41,8 +41,7 @@ class Path(PathBase):
         return cmp(self.path, other)
 
 
-Device = namedtuple('Device', ['path', 'vid', 'pid', 'serialno'])
-Device.__str__ = lambda self: "Device(%04x:%04x %s)" % (self.vid, self.pid, [self.path, repr(self.serialno)][bool(self.serialno)])
+Device = namedtuple('Device', ['path', 'vid', 'pid', 'did', 'serialno'])
 #Device.__cmp__ = lambda a, b: cmp(a.path, b.path)
 
 def find_usb_devices_libusb():
@@ -90,7 +89,7 @@ def find_usb_devices_libusb():
             except usb.USBError:
                 pass
 
-        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
+        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, did=dev.bcdDevice, serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
     return devobjs
 
 def find_usb_devices_lsusb():
@@ -106,24 +105,34 @@ def find_usb_devices_lsusb():
 
     class LsusbDevice(Device):
         def __new__(cls, *args, **kw):
-            return Device.__new__(cls, *args, serialno=None, **kw)
+            syspaths = find_sys(kw['path'])
+            syspaths.sort()
 
-        @property
-        def serialno(self):
-            # Get the serialno number from the device and cache it.
-            if not hasattr(self, "_serialno"):
-                serialnopath = os.path.join(self.syspaths[0], "serial")
-                if not os.path.exists(serialnopath):
-                    self._serialno = None
-                else:
-                    self._serialno = open(serialnopath, "r").read().strip()
-            return self._serialno
+            # Get the did number from sysfs
+            didpath = os.path.join(syspaths[0], "bcdDevice")
+            if not os.path.exists(didpath):
+                did = None
+            else:
+                did = open(didpath, "r").read().strip()
 
-        @property
-        def syspaths(self):
-            if not hasattr(self, "_syspaths"):
-                self._syspaths = find_sys(self.path)
-            return self._syspaths
+            # Get the did number from sysfs
+            serialnopath = os.path.join(syspaths[0], "serial")
+            if not os.path.exists(serialnopath):
+                serialno = None
+            else:
+                serialno = open(serialnopath, "r").read().strip()
+
+            d = Device.__new__(cls, *args, did=did, serialno=serialno, **kw)
+            d.syspaths = syspaths
+            return d
+
+        def __repr__(self):
+            if self.serialno:
+                s = repr(self.serialno)
+            else:
+                s = self.path
+            return "%s(%04x:%04x:%s %s)" % (
+                self.__class__.__name__, self.vid, self.pid, self.did, s)
 
         def inuse(self):
             return bool(self.drivers())
