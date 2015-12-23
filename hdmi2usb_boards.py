@@ -299,7 +299,12 @@ def load_fx2(board, filename, verbose=False):
     if verbose:
         sys.stderr.write("Running %r\n" % " ".join(cmdline))
 
-    subprocess.check_call(cmdline)
+    try:
+        output = subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        if not b"can't modify CPUCS: Protocol error\n" in e.stdout:
+            print(e.stdout)
+            raise
 
 
 def flash_fx2(board, filename, verbose=False):
