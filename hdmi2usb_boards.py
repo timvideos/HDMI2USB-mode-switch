@@ -447,10 +447,16 @@ def find_boards():
         # https://github.com/mithro/ixo-usb-jtag
         # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
         elif device.vid == 0x16c0 and device.pid == 0x06ad:
-            if device.serialno not in USBJTAG_MAPPING:
-                logging.warn("Unknown usb-jtag device! %r (%s)", device.serialno, device)
-                continue
-            all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serialno], state="jtag"))
+            if device.did == '0001':
+                if device.serialno not in USBJTAG_MAPPING:
+                    logging.warn("Unknown usb-jtag device! %r (%s)", device.serialno, device)
+                    continue
+                all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serialno], state="jtag"))
+            elif device.did == 'ff00':
+                all_boards.append(Board(dev=device, type='opsis', state="jtag"))
+            else:
+                    logging.warn("Unknown usb-jtag device version! %r (%s)", device.did, device)
+                    continue
 
     # FIXME: This is a horrible hack!?@
     # Patch the Atlys board so the exart_uart is associated with it.
