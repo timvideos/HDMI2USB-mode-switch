@@ -446,7 +446,7 @@ def find_boards():
         # https://github.com/mithro/ixo-usb-jtag
         # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
         elif device.vid == 0x16c0 and device.pid == 0x06ad:
-            if device.did == '0001':
+            if device.did in ('0001', '0004'):
                 if device.serialno not in USBJTAG_MAPPING:
                     logging.warn("Unknown usb-jtag device! %r (%s)", device.serialno, device)
                     continue
