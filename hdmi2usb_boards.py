@@ -354,7 +354,6 @@ def load_fpga(board, filename, verbose=False):
 def flash_fpga(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
-    assert board.type == "opsis", "Only support flashing the Opsis for now (not %s)." % board.type
 
     filepath = os.path.abspath(filename)
     assert os.path.exists(filepath), filepath
