@@ -22,7 +22,6 @@ unbind-helper: bin/unbind-helper
 	echo ""
 
 test:
-	echo $$PATH
 	python hdmi2usb_test.py
 
 root-test:
@@ -30,5 +29,10 @@ root-test:
 
 clean:
 	sudo rm bin/unbind-helper
+
+install-udev:
+	sudo cp 52-hdmi2usb.rules /etc/udev/rules.d/
+	sudo chmod 644 /etc/udev/rules.d/52-hdmi2usb.rules
+	sudo chown root:root /etc/udev/rules.d/52-hdmi2usb.rules
 
 all: bin/unbind-helper
