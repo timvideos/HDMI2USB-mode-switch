@@ -143,7 +143,10 @@ def find_usb_devices_lsusb():
                     unbind_path = os.path.join(driver_path, "unbind")
                     assert os.path.exists(unbind_path), unbind_path
                     interface = os.path.split(path)[-1]
-                    open(unbind_path, "w").write(interface)
+                    try:
+                        open(unbind_path, "w").write(interface)
+                    except PermissionError:
+                        subprocess.check_call("bin/unbind-helper '%s' '%s'" % (unbind_path, interface), shell=True)
 
         def tty(self):
             ttys = []
