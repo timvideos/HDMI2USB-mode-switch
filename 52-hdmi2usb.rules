@@ -7,6 +7,10 @@ ATTR{idVendor}=="1d50", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
 # Grant permissions to unconfigured cypress chips.
 ATTR{idVendor}=="04b4", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
 
+# Grant permissions to Digilent usb devices.
+ATTR{idVendor}=="1443", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
+ATTR{idVendor}=="04e2", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1" # Exar USB on the Atlys
+
 # Grant permissions to Numato USB devices.
 ATTR{idVendor}=="2a19", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
 
