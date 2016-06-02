@@ -101,19 +101,22 @@ class LsusbDevice(DeviceBase):
         syspaths = find_sys(kw['path'])
         syspaths.sort()
 
-        # Get the did number from sysfs
-        didpath = os.path.join(syspaths[0], "bcdDevice")
-        if not os.path.exists(didpath):
-            did = None
-        else:
-            did = open(didpath, "r").read().strip()
+        # Get the did/serialno number from sysfs
+        did = None
+        serialno = None
 
-        # Get the did number from sysfs
-        serialnopath = os.path.join(syspaths[0], "serial")
-        if not os.path.exists(serialnopath):
-            serialno = None
-        else:
-            serialno = open(serialnopath, "r").read().strip()
+        for syspath in syspaths:
+            didpath = os.path.join(syspath, "bcdDevice")
+            if os.path.exists(didpath):
+                newdid = open(didpath, "r").read().strip()
+                assert did is None or did == newdid, (did, newdid)
+                did = newdid
+
+            serialnopath = os.path.join(syspath, "serial")
+            if os.path.exists(serialnopath):
+                newserialno = open(serialnopath, "r").read().strip()
+                assert serialno is None or serialno == newserialno, (serialno, newserialno)
+                serialno = newserialno
 
         d = DeviceBase.__new__(cls, *args, did=did, serialno=serialno, **kw)
         d.syspaths = syspaths
