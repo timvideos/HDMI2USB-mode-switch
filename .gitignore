@@ -56,5 +56,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# conda
+Miniconda3-latest-Linux-x86_64.sh
+conda
+
 # Helper util.
 bin/unbind-helper

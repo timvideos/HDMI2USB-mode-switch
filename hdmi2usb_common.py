@@ -32,4 +32,12 @@ class Path(PathBase):
         return cmp(self.path, other)
 
 
-DeviceBase = namedtuple('DeviceBase', ['path', 'vid', 'pid', 'did', 'serialno'])
+_DeviceBase = namedtuple('DeviceBase', ['path', 'vid', 'pid', 'did', 'serialno'])
+class DeviceBase(_DeviceBase):
+    def __repr__(self):
+        if self.serialno:
+            s = repr(self.serialno)
+        else:
+            s = self.path
+        return "%s(%04x:%04x:%s %s)" % (
+            self.__class__.__name__, self.vid, self.pid, self.did, s)

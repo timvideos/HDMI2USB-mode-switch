@@ -119,14 +119,6 @@ class LsusbDevice(DeviceBase):
         d.syspaths = syspaths
         return d
 
-    def __repr__(self):
-        if self.serialno:
-            s = repr(self.serialno)
-        else:
-            s = self.path
-        return "%s(%04x:%04x:%s %s)" % (
-            self.__class__.__name__, self.vid, self.pid, self.did, s)
-
     def inuse(self):
         return bool(self.drivers())
 

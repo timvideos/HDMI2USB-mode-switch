@@ -16,7 +16,7 @@ import usb.util
 from hdmi2usb_common import *
 
 
-class LibDevice(Device):
+class LibDevice(DeviceBase):
     def inuse(self, dev=None):
         try:
             if dev is None:
@@ -53,12 +53,20 @@ def find_usb_devices():
 
     devobjs = []
     for dev in usb.core.find(find_all=True):
-        serial = None
+        serialno = None
         if dev.iSerialNumber > 0:
             try:
-                serial = dev.serial_number
+                serialno = dev.serial_number
             except usb.USBError:
                 pass
+            except ValueError:
+                pass
 
-        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, serial=serial, path=Path(bus=dev.bus, address=dev.address)))
+        did = None
+        try:
+            did = '%04x' % dev.bcdDevice
+        except TypeError:
+            pass
+
+        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, did=did, serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
     return devobjs
