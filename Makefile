@@ -18,6 +18,9 @@ bin/unbind-helper:
 	sudo chmod u+s $@
 	ls -l $@
 
+unbind-helper: bin/unbind-helper
+	echo ""
+
 test:
 	echo $$PATH
 	python hdmi2usb_test.py
