@@ -8,11 +8,31 @@ Linux command line tools.
 This will only run on Linux.
 """
 
+import logging
 import os
 import re
 import subprocess
 
 from hdmi2usb_common import *
+
+# Try and find unbind-helper
+def find_unbind_helper():
+    callpaths = [
+        os.path.join(os.path.dirname(__file__), "bin", "unbind-helper"),
+        "unbind-helper",
+    ]
+
+    for path in callpaths:
+        pathret = subprocess.call(path, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        if pathret == 255:
+            return path
+
+    logging.warning("unbind-helper not found, will have to run as root!")
+    return None
+
+unbind_helper = find_unbind_helper()
+
+
 
 SYS_ROOT = '/sys/bus/usb/devices'
 
@@ -128,7 +148,9 @@ class LsusbDevice(DeviceBase):
                 try:
                     open(unbind_path, "w").write(interface)
                 except PermissionError:
-                    subprocess.check_call("bin/unbind-helper '%s' '%s'" % (unbind_path, interface), shell=True)
+                    if not unbind_helper:
+                        raise
+                    subprocess.check_call("%s '%s' '%s'" % (unbind_helper, unbind_path, interface), shell=True)
 
     def tty(self):
         ttys = []

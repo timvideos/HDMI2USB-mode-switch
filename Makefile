@@ -7,4 +7,7 @@ bin/unbind-helper:
 	sudo chmod u+s $@
 	ls -l $@
 
+clean:
+	sudo rm bin/unbind-helper
+
 all: bin/unbind-helper
