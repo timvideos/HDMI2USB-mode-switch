@@ -13,7 +13,7 @@ def test_libusb_and_lsusb_equal():
     lsusb_devices = hdmi2usb_lsusb.find_usb_devices()
     for libobj, lsobj in zip(sorted(libusb_devices), sorted(lsusb_devices)):
         #print("%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers()))
-        print("%s -- lib: %-80s ls: %-80s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, libobj.path, lsobj.drivers()))
+        print("%s -- lib: %-60s ls: %-60s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, libobj.path, lsobj.drivers()))
         assert libobj.vid == lsobj.vid, "vid: %r == %r" % (libobj.vid, lsobj.vid)
         assert libobj.pid == lsobj.pid, "pid: %r == %r" % (libobj.pid, lsobj.pid)
         assert libobj.path == lsobj.path, "path: %r == %r" % (libobj.path, lsobj.path)
@@ -24,8 +24,7 @@ def test_libusb_and_lsusb_equal():
             print(e)
 
         try:
-            if libobj.serialno:
-                assert libobj.serialno == lsobj.serialno, "serialno: %r == %r" % (libobj.serialno, lsobj.serialno)
+            assert libobj.serialno == lsobj.serialno, "serialno: %r == %r" % (libobj.serialno, lsobj.serialno)
         except AssertionError as e:
             print(e)
 
