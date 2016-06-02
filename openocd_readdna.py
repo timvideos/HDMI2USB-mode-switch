@@ -1,15 +1,13 @@
-
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et sts=4 ai:
 
 import subprocess
 import re
-
-import argparse
-
-
+import sys
 
 output = subprocess.check_output("""\
 openocd --file board/%s.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
-""" % "pipistrello", shell=True, stderr=subprocess.STDOUT)
+""" % sys.argv[1], shell=True, stderr=subprocess.STDOUT)
 
 for line in output.splitlines():
     line = line.decode('utf-8')

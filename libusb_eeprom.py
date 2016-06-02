@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# vim: set ts=4 sw=4 et sts=4 ai:
 
 import array
 import usb.core
@@ -40,6 +42,7 @@ def get_dev():
     return dev
 
 
+import sys
 import argparse
 import time
 
@@ -47,12 +50,15 @@ dev = get_dev()
 current_eeprom_data = get_eeprom(dev, 0, 256)
 
 old_eeprom_data = bytes(current_eeprom_data)
-new_eeprom_data = bytes(current_eeprom_data)
-
 print(repr(old_eeprom_data))
-print(repr(new_eeprom_data))
 
-if old_eeprom_data != new_eeprom_data:
-    set_eeprom(dev, 0, new_eeprom_data)
+if len(sys.argv) > 1:
+    new_eeprom_data = file(sys.argv[1], "rb").read()
+    print(repr(old_eeprom_data))
+    print(repr(new_eeprom_data))
 
-s.check()
+    if old_eeprom_data != new_eeprom_data:
+        set_eeprom(dev, 0, new_eeprom_data)
+else:
+    print(repr(s))
+    s.check()

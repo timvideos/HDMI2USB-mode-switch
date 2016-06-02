@@ -205,10 +205,6 @@ if MODE == 'mode-switch':
             print("flterm something....")
             raise NotImplemented("Not yet finished...")
 
-        # Invalid configuration...
-        else:
-            raise SystemError("Need to specify --load-XXX or --mode")
-
     boards = find_hdmi2usb_boards(args)
 
 for board in boards:

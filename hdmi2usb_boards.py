@@ -361,7 +361,7 @@ def flash_fpga(board, filename, verbose=False):
     if verbose > 2:
         script += ["flash info 0"]
 
-    script += ["flash read_bank 0 backup.bit 0 0x01000000"]
+    #script += ["flash read_bank 0 backup.bit 0 0x01000000"]
 
     script += [
         #"jtagspi_program {} 0x{:x}".format(data, address),
