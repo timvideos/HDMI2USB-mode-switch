@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# vim: set ts=4 sw=4 et sts=4 ai:
 
 import sys
 from setuptools import setup
@@ -34,6 +35,11 @@ setup(
         "Programming Language :: Python",
     ],
     packages=find_packages(),
+#    package_data={},
+#    data_files=[
+#        ('/usr/bin/', ['unbind-helper']),
+#        ('/etc/udev/rules.d/', ['52-hdmi2usb.rules']),
+#    ],
     setup_requires=['setuptools-pep8'],
     include_package_data=True,
     entry_points={
@@ -41,6 +47,6 @@ setup(
             "hdmi2usb-find-board", "hdmi2usb-mode-switch", "hdmi2usb-manage-firmware",
             "opsis-find-board", "opsis-mode-switch", "opsis-manage-firmware",
             "atlys-find-board", "atlys-mode-switch", "atlys-manage-firmware",
-	)],
+        )],
     },
 )
