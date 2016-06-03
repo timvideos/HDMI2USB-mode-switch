@@ -37,7 +37,7 @@ setup(
     setup_requires=['setuptools-pep8'],
     include_package_data=True,
     entry_points={
-        "console_scripts": [x+"hdmi2usb.modeswitch.cli:main" for x in (
+        "console_scripts": [x+"=hdmi2usb.modeswitch.cli:main" for x in (
             "hdmi2usb-find-board", "hdmi2usb-mode-switch", "hdmi2usb-manage-firmware",
             "opsis-find-board", "opsis-mode-switch", "opsis-manage-firmware",
             "atlys-find-board", "atlys-mode-switch", "atlys-manage-firmware",
