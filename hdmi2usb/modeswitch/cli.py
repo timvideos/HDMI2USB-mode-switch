@@ -18,7 +18,7 @@ import subprocess
 
 from collections import namedtuple
 
-import hdmi2usb_boards
+import boards
 
 # Parse the command line name
 cmd = os.path.basename(sys.argv[0])
@@ -26,9 +26,9 @@ if cmd.endswith('.py'):
     cmd = cmd.rsplit('.', 1)[0]
 
 BOARD, MODE = cmd.split('-', 1)
-hdmi2usb_boards.assert_in(BOARD, hdmi2usb_boards.BOARD_TYPES+['hdmi2usb'])
+boards.assert_in(BOARD, boards.BOARD_TYPES+['hdmi2usb'])
 POSSIBLE_MODES = ['find-board', 'mode-switch']
-hdmi2usb_boards.assert_in(MODE, POSSIBLE_MODES)
+boards.assert_in(MODE, POSSIBLE_MODES)
 
 # Parse the arguments
 import argparse
@@ -37,7 +37,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--verbose', '-v', action='count', help='Output more information.', default=0) #, aliases=['--debug', '-d'])
 
 if BOARD == "hdmi2usb":
-    parser.add_argument('--by-type', help='Find board with a given type.', choices=hdmi2usb_boards.BOARD_TYPES)
+    parser.add_argument('--by-type', help='Find board with a given type.', choices=boards.BOARD_TYPES)
 
 parser.add_argument('--by-mac', help='Find board with the given MAC address.')
 parser.add_argument('--by-dna', help='Find board with the given Device DNA.')
@@ -54,14 +54,14 @@ parser.add_argument('--all', help='Do operation on all boards, otherwise will er
 
 parser.add_argument('--get-usbfs', action='store_true', help='Return the /dev/bus/usb path for a device.')
 parser.add_argument('--get-sysfs', action='store_true', help='Return the /sys/bus/usb/devices path for a device.')
-parser.add_argument('--get-state', action='store_true', help='Return the state the device is in. Possible states are: %r' % hdmi2usb_boards.BOARD_STATES)
+parser.add_argument('--get-state', action='store_true', help='Return the state the device is in. Possible states are: %r' % boards.BOARD_STATES)
 parser.add_argument('--get-video-device', action='store_true', help='Get the primary video device path.')
 parser.add_argument('--get-serial-device', action='store_true', help='Get the serial device path.')
 
 parser.add_argument('--prefer-hardware-serial', help='Prefer the hardware serial port on the Atlys board.')
 
 if MODE == 'mode-switch':
-    parser.add_argument('--mode', help='Switch mode to given state.', choices=hdmi2usb_boards.BOARD_STATES)
+    parser.add_argument('--mode', help='Switch mode to given state.', choices=boards.BOARD_STATES)
     # FPGA
     parser.add_argument('--load-gateware', help='Load gateware onto the FPGA.')
     parser.add_argument('--flash-gateware', help='Flash gateware onto the SPI flash which the FPGA boots from.')
@@ -78,18 +78,18 @@ args = parser.parse_args()
 if BOARD != "hdmi2usb":
     args.by_type = BOARD
 if args.by_type:
-    hdmi2usb_boards.assert_in(args.by_type, hdmi2usb_boards.BOARD_TYPES)
+    boards.assert_in(args.by_type, boards.BOARD_TYPES)
 
 
-def find_hdmi2usb_boards(args):
-    all_boards = hdmi2usb_boards.find_boards()
+def find_boards(args):
+    all_boards = boards.find_boards()
 
     # Filter out the boards we don't care about
     filtered_boards = []
     for board in all_boards:
         if args.verbose > 0:
             sys.stderr.write("%s in '%s' mode at %s\n" % (
-                hdmi2usb_boards.BOARD_NAMES[board.type],
+                boards.BOARD_NAMES[board.type],
                 board.state,
                 board.dev.path,
                 ))
@@ -111,7 +111,7 @@ def find_hdmi2usb_boards(args):
 
     return filtered_boards
 
-boards = find_hdmi2usb_boards(args)
+boards = find_boards(args)
 if not args.all:
     assert len(boards) == 1, boards
 
@@ -158,11 +158,11 @@ if MODE == 'mode-switch':
                     sys.stderr.write("Using FX2 firmware %s\n" % firmware)
 
                 old_board = board
-                hdmi2usb_boards.load_fx2(old_board, firmware, verbose=args.verbose)
+                boards.load_fx2(old_board, firmware, verbose=args.verbose)
 
                 starttime = time.time()
                 while True:
-                    boards = find_hdmi2usb_boards(args)
+                    boards = find_boards(args)
 
                     found_board = None
                     for new_board in boards:
@@ -191,14 +191,14 @@ if MODE == 'mode-switch':
         
         # Load firmware onto the fx2
         if args.load_fx2_firmware:
-            hdmi2usb_boards.load_fx2(board, args.load_fx2_firmware, verbose=args.verbose)
+            boards.load_fx2(board, args.load_fx2_firmware, verbose=args.verbose)
 
         # Load gateware onto the FPGA
         elif args.load_gateware:
-            hdmi2usb_boards.load_fpga(board, args.load_gateware, verbose=args.verbose)
+            boards.load_fpga(board, args.load_gateware, verbose=args.verbose)
 
         elif args.flash_gateware:
-            hdmi2usb_boards.flash_fpga(board, args.flash_gateware, verbose=args.verbose)
+            boards.flash_fpga(board, args.flash_gateware, verbose=args.verbose)
 
         # Load firmware onto the lm32
         elif args.load_lm32_firmware:
@@ -208,7 +208,7 @@ if MODE == 'mode-switch':
             print("flterm something....")
             raise NotImplemented("Not yet finished...")
 
-    boards = find_hdmi2usb_boards(args)
+    boards = find_boards(args)
 
 for board in boards:
     if not (args.get_usbfs or args.get_sysfs or args.get_video_device or args.get_serial_device):

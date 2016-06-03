@@ -13,7 +13,7 @@ if usb.__file__.endswith('.so'):
     logging.warning("Your python usb module is old.")
 import usb.util
 
-from hdmi2usb_common import *
+from base import *
 
 
 class LibDevice(DeviceBase):

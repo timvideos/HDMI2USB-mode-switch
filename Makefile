@@ -35,10 +35,9 @@ clean:
 	sudo rm bin/unbind-helper
 
 read-dna:
-	./hdmi2usb-mode-switch.py --mode=jtag
+	./hdmi2usb-mode-switch.py --verbose --mode=jtag
 	which openocd
 	openocd --file board/numato_opsis.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
-	./openocd_readdna.py numato-opsis
 
 install-udev:
 	sudo cp 52-hdmi2usb.rules /etc/udev/rules.d/
