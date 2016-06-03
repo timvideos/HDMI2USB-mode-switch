@@ -18,7 +18,7 @@ import subprocess
 
 from collections import namedtuple
 
-import hdmi2usb_lsusb as hdmi2usb
+from  . import lsusb as usbapi
 
 
 def assert_in(needle, haystack):
@@ -160,7 +160,7 @@ def flash_fpga(board, filename, verbose=False):
 def find_boards():
     all_boards = []
     exart_uarts = []
-    for device in hdmi2usb.find_usb_devices():
+    for device in usbapi.find_usb_devices():
         # Digilent Atlys board with stock "Adept" firmware
         # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
         if device.vid == 0x1443 and device.pid == 0x0007:

@@ -13,7 +13,7 @@ import os
 import re
 import subprocess
 
-from base import *
+from .base import *
 
 # Try and find unbind-helper
 def find_unbind_helper():

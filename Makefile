@@ -9,6 +9,7 @@ conda:
 	conda config --add channels timvideos
 	conda install openocd
 	pip install pyusb
+	python setup.py develop
 
 clean-conda:
 	rm -rf Miniconda3-latest-Linux-x86_64.sh
