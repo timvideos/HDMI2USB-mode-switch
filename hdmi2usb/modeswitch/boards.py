@@ -18,7 +18,7 @@ import subprocess
 
 from collections import namedtuple
 
-from  . import lsusb as usbapi
+from . import lsusb as usbapi
 
 
 def assert_in(needle, haystack):
@@ -29,25 +29,28 @@ BOARD_TYPES = ['opsis', 'atlys']
 BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
-    }
+}
 BOARD_STATES = ['unconfigured', 'jtag', 'serial', 'eeprom', 'operational']
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
     'hw_opsis': 'opsis',
-    }
-USBJTAG_RMAPPING = {v:k for k,v in USBJTAG_MAPPING.items()}
+}
+USBJTAG_RMAPPING = {v: k for k, v in USBJTAG_MAPPING.items()}
 OPENOCD_MAPPING = {
     'atlys': "board/digilent_atlys.cfg",
     'opsis': "board/numato_opsis.cfg",
-    }
+}
 OPENOCD_FLASHPROXY = {
     'opsis': 'flash_proxy/opsis/bscan_spi_xc6slx45t.bit',
     'atlys': 'flash_proxy/atlys/bscan_spi_xc6slx45.bit',
 }
 
 BoardBase = namedtuple("Board", ["dev", "type", "state"])
+
+
 class Board(BoardBase):
+
     def tty(self):
         return self.dev.tty()
 
@@ -65,7 +68,7 @@ def load_fx2(board, filename, verbose=False):
     cmdline += ["-D", str(board.dev.path)]
     cmdline += ["-I", filepath]
     if verbose:
-        cmdline += ["-v",]
+        cmdline += ["-v", ]
 
     if verbose:
         sys.stderr.write("Running %r\n" % " ".join(cmdline))
@@ -164,14 +167,17 @@ def find_boards():
         # Digilent Atlys board with stock "Adept" firmware
         # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
         if device.vid == 0x1443 and device.pid == 0x0007:
-            all_boards.append(Board(dev=device, type="atlys", state="unconfigured"))
+            all_boards.append(
+                Board(dev=device, type="atlys", state="unconfigured"))
 
         # The Numato Opsis will boot in the following mode when the EEPROM is not
         # set up correctly.
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
-        # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp. CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
+        # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp.
+        # CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
         elif device.vid == 0x04b4 and device.pid == 0x8613:
-            all_boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+            all_boards.append(
+                Board(dev=device, type="opsis", state="unconfigured"))
 
         # The preproduction Numato Opsis shipped to Champions will boot into this
         # mode by default.
@@ -180,7 +186,8 @@ def find_boards():
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#unconfigured-mode
         # Bus 003 Device 091: ID 2a19:5440 Numato Opsis (Unconfigured Mode)
         elif device.vid == 0x2A19 and device.pid == 0x5440:
-            all_boards.append(Board(dev=device, type="opsis", state="unconfigured"))
+            all_boards.append(
+                Board(dev=device, type="opsis", state="unconfigured"))
 
         # The production Numato Opsis will boot in this mode when SW1 is held
         # during boot, or when held for 5 seconds with correctly configured FPGA
@@ -189,11 +196,14 @@ def find_boards():
         # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (JTAG and USB Mode)
         elif device.vid == 0x2A19 and device.pid == 0x5441:
             if device.did == '0001':
-                all_boards.append(Board(dev=device, type="opsis", state="jtag"))
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="jtag"))
             elif device.did == '0002':
-                all_boards.append(Board(dev=device, type="opsis", state="eeprom"))
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="eeprom"))
             elif device.did == '0003':
-                all_boards.append(Board(dev=device, type="opsis", state="serial"))
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="serial"))
             else:
                 assert False, "Unknown mode: %s" % device.did
 
@@ -201,22 +211,27 @@ def find_boards():
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#hdmi2usb.tv-mode
         # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (HDMI2USB.tv mode)
         elif device.vid == 0x2A19 and device.pid == 0x5442:
-            all_boards.append(Board(dev=device, type="opsis", state="operational"))
+            all_boards.append(
+                Board(dev=device, type="opsis", state="operational"))
 
         # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
         # https://github.com/mithro/ixo-usb-jtag
-        # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica 
+        # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica
         elif device.vid == 0x16c0 and device.pid == 0x06ad:
             if device.did in ('0001', '0004'):
                 if device.serialno not in USBJTAG_MAPPING:
-                    logging.warn("Unknown usb-jtag device! %r (%s)", device.serialno, device)
+                    logging.warn("Unknown usb-jtag device! %r (%s)",
+                                 device.serialno, device)
                     continue
-                all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[device.serialno], state="jtag"))
+                all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[
+                                  device.serialno], state="jtag"))
             elif device.did == 'ff00':
-                all_boards.append(Board(dev=device, type='opsis', state="jtag"))
+                all_boards.append(
+                    Board(dev=device, type='opsis', state="jtag"))
             else:
-                    logging.warn("Unknown usb-jtag device version! %r (%s)", device.did, device)
-                    continue
+                logging.warn(
+                    "Unknown usb-jtag device version! %r (%s)", device.did, device)
+                continue
 
     # FIXME: This is a horrible hack!?@
     # Patch the Atlys board so the exart_uart is associated with it.

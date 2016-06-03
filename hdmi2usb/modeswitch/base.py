@@ -13,7 +13,10 @@ import os
 from collections import namedtuple
 
 PathBase = namedtuple('PathBase', ['bus', 'address'])
+
+
 class Path(PathBase):
+
     def __new__(cls, *args, **kw):
         r = PathBase.__new__(cls, *args, **kw)
         assert os.path.exists(r.path), "%r %r" % (r.path, r)
@@ -32,8 +35,12 @@ class Path(PathBase):
         return cmp(self.path, other)
 
 
-_DeviceBase = namedtuple('DeviceBase', ['path', 'vid', 'pid', 'did', 'serialno'])
+_DeviceBase = namedtuple(
+    'DeviceBase', ['path', 'vid', 'pid', 'did', 'serialno'])
+
+
 class DeviceBase(_DeviceBase):
+
     def __repr__(self):
         if self.serialno:
             s = repr(self.serialno)

@@ -27,12 +27,17 @@ def args_parser(board, mode):
     """Create an parser for the arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('--verbose', '-v', action='count', help='Output more information.', default=0) #, aliases=['--debug', '-d'])
+    # , aliases=['--debug', '-d'])
+    parser.add_argument('--verbose', '-v', action='count',
+                        help='Output more information.', default=0)
 
-    parser.add_argument('--by-type', help='Find board with a given type.', choices=boards.BOARD_TYPES)
+    parser.add_argument(
+        '--by-type', help='Find board with a given type.', choices=boards.BOARD_TYPES)
 
-    parser.add_argument('--by-mac', help='Find board with the given MAC address.')
-    parser.add_argument('--by-dna', help='Find board with the given Device DNA.')
+    parser.add_argument(
+        '--by-mac', help='Find board with the given MAC address.')
+    parser.add_argument(
+        '--by-dna', help='Find board with the given Device DNA.')
     parser.add_argument('--by-position', help="""\
 Find board using a given position in the USB structure.
 
@@ -42,29 +47,43 @@ Example:
 
 While this *should* be static across reboots, but sadly on some machines it isn't :(
 """)
-    parser.add_argument('--by-mode', help=argparse.SUPPRESS) # help='Find board in a given mode.', )
+    parser.add_argument(
+        '--by-mode', help=argparse.SUPPRESS)  # help='Find board in a given mode.', )
 
-    parser.add_argument('--all', help='Do operation on all boards, otherwise will error if multiple boards are found.')
+    parser.add_argument(
+        '--all', help='Do operation on all boards, otherwise will error if multiple boards are found.')
 
-    parser.add_argument('--get-usbfs', action='store_true', help='Return the /dev/bus/usb path for a device.')
-    parser.add_argument('--get-sysfs', action='store_true', help='Return the /sys/bus/usb/devices path for a device.')
-    parser.add_argument('--get-state', action='store_true', help='Return the state the device is in. Possible states are: %r' % boards.BOARD_STATES)
-    parser.add_argument('--get-video-device', action='store_true', help='Get the primary video device path.')
-    parser.add_argument('--get-serial-device', action='store_true', help='Get the serial device path.')
+    parser.add_argument('--get-usbfs', action='store_true',
+                        help='Return the /dev/bus/usb path for a device.')
+    parser.add_argument('--get-sysfs', action='store_true',
+                        help='Return the /sys/bus/usb/devices path for a device.')
+    parser.add_argument('--get-state', action='store_true',
+                        help='Return the state the device is in. Possible states are: %r' % boards.BOARD_STATES)
+    parser.add_argument('--get-video-device', action='store_true',
+                        help='Get the primary video device path.')
+    parser.add_argument('--get-serial-device',
+                        action='store_true', help='Get the serial device path.')
 
-    parser.add_argument('--prefer-hardware-serial', help='Prefer the hardware serial port on the Atlys board.')
+    parser.add_argument('--prefer-hardware-serial',
+                        help='Prefer the hardware serial port on the Atlys board.')
 
-    parser.add_argument('--mode', help='Switch mode to given state.', choices=boards.BOARD_STATES)
+    parser.add_argument(
+        '--mode', help='Switch mode to given state.', choices=boards.BOARD_STATES)
     # FPGA
     parser.add_argument('--load-gateware', help='Load gateware onto the FPGA.')
-    parser.add_argument('--flash-gateware', help='Flash gateware onto the SPI flash which the FPGA boots from.')
+    parser.add_argument(
+        '--flash-gateware', help='Flash gateware onto the SPI flash which the FPGA boots from.')
     # Cypress FX2
-    parser.add_argument('--load-fx2-firmware', help='Load firmware file onto the Cypress FX2.')
-    parser.add_argument('--flash-fx2-eeprom', help='Flash the FX2 eeprom with data.')
+    parser.add_argument('--load-fx2-firmware',
+                        help='Load firmware file onto the Cypress FX2.')
+    parser.add_argument('--flash-fx2-eeprom',
+                        help='Flash the FX2 eeprom with data.')
     #
-    parser.add_argument('--load-lm32-firmware', help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
+    parser.add_argument('--load-lm32-firmware',
+                        help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
 
-    parser.add_argument('--timeout', help='How long to wait in seconds before giving up.', type=float)
+    parser.add_argument(
+        '--timeout', help='How long to wait in seconds before giving up.', type=float)
 
     return parser
 
@@ -80,15 +99,17 @@ def find_boards(args):
                 boards.BOARD_NAMES[board.type],
                 board.state,
                 board.dev.path,
-                ))
+            ))
             for sp in board.dev.syspaths:
                 sys.stderr.write(" %s\n" % (sp,))
 
             if board.dev.inuse():
-                sys.stderr.write(" Board is currently used by drivers %s\n" % (board.dev.drivers(),))
+                sys.stderr.write(
+                    " Board is currently used by drivers %s\n" % (board.dev.drivers(),))
 
             if board.tty():
-                sys.stderr.write(" Serial port at %s\n" % ", ".join(board.tty()))
+                sys.stderr.write(" Serial port at %s\n" %
+                                 ", ".join(board.tty()))
 
         if args.by_type and args.by_type != board.type:
             if args.verbose > 0:
@@ -107,7 +128,7 @@ def main():
         cmd = cmd.rsplit('.', 1)[0]
 
     board, mode = cmd.split('-', 1)
-    boards.assert_in(board, boards.BOARD_TYPES+['hdmi2usb'])
+    boards.assert_in(board, boards.BOARD_TYPES + ['hdmi2usb'])
     POSSIBLE_MODES = ['find-board', 'mode-switch', 'manage-firmware']
     boards.assert_in(mode, POSSIBLE_MODES)
 
@@ -122,7 +143,7 @@ def main():
     if not args.all:
         assert len(found_boards) == 1, found_boards
 
-    MYDIR=os.path.dirname(os.path.abspath(__file__))
+    MYDIR = os.path.dirname(os.path.abspath(__file__))
     if args.verbose:
         sys.stderr.write("My root dir: %s\n" % MYDIR)
 
@@ -161,7 +182,8 @@ def main():
 
                 if board.state != newmode:
                     if args.verbose:
-                        sys.stderr.write("Going from %s to %s\n" % (board.state, newmode))
+                        sys.stderr.write("Going from %s to %s\n" %
+                                         (board.state, newmode))
                         sys.stderr.write("Using FX2 firmware %s\n" % firmware)
 
                     old_board = board
@@ -194,18 +216,22 @@ def main():
                         sys.stderr.write("Board now %r\n" % (board,))
                 else:
                     if args.verbose:
-                        sys.stderr.write("Board already in required mode (%s)\n" % (board.state,))
-            
+                        sys.stderr.write(
+                            "Board already in required mode (%s)\n" % (board.state,))
+
             # Load firmware onto the fx2
             if args.load_fx2_firmware:
-                boards.load_fx2(board, args.load_fx2_firmware, verbose=args.verbose)
+                boards.load_fx2(board, args.load_fx2_firmware,
+                                verbose=args.verbose)
 
             # Load gateware onto the FPGA
             elif args.load_gateware:
-                boards.load_fpga(board, args.load_gateware, verbose=args.verbose)
+                boards.load_fpga(board, args.load_gateware,
+                                 verbose=args.verbose)
 
             elif args.flash_gateware:
-                boards.flash_fpga(board, args.flash_gateware, verbose=args.verbose)
+                boards.flash_fpga(board, args.flash_gateware,
+                                  verbose=args.verbose)
 
             # Load firmware onto the lm32
             elif args.load_lm32_firmware:

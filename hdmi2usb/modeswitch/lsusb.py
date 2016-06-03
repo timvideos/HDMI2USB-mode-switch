@@ -16,6 +16,8 @@ import subprocess
 from .base import *
 
 # Try and find unbind-helper
+
+
 def find_unbind_helper():
     callpaths = [
         os.path.join(os.path.dirname(__file__), "bin", "unbind-helper"),
@@ -23,7 +25,8 @@ def find_unbind_helper():
     ]
 
     for path in callpaths:
-        pathret = subprocess.call(path, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        pathret = subprocess.call(
+            path, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if pathret == 255:
             return path
 
@@ -33,8 +36,8 @@ def find_unbind_helper():
 unbind_helper = find_unbind_helper()
 
 
-
 SYS_ROOT = '/sys/bus/usb/devices'
+
 
 def get_path_from_sysdir(dirpath):
     buspath = os.path.join(dirpath, 'busnum')
@@ -90,6 +93,8 @@ def create_sys_mapping():
 
 
 FIND_SYS_CACHE = {}
+
+
 def find_sys(path, mapping=FIND_SYS_CACHE):
     if not mapping:
         mapping.update(create_sys_mapping())
@@ -97,6 +102,7 @@ def find_sys(path, mapping=FIND_SYS_CACHE):
 
 
 class LsusbDevice(DeviceBase):
+
     def __new__(cls, *args, **kw):
         syspaths = find_sys(kw['path'])
         syspaths.sort()
@@ -115,7 +121,8 @@ class LsusbDevice(DeviceBase):
             serialnopath = os.path.join(syspath, "serial")
             if os.path.exists(serialnopath):
                 newserialno = open(serialnopath, "r").read().strip()
-                assert serialno is None or serialno == newserialno, (serialno, newserialno)
+                assert serialno is None or serialno == newserialno, (
+                    serialno, newserialno)
                 serialno = newserialno
 
         d = DeviceBase.__new__(cls, *args, did=did, serialno=serialno, **kw)
@@ -145,7 +152,8 @@ class LsusbDevice(DeviceBase):
                 except PermissionError:
                     if not unbind_helper:
                         raise
-                    subprocess.check_call("%s '%s' '%s'" % (unbind_helper, unbind_path, interface), shell=True)
+                    subprocess.check_call("%s '%s' '%s'" % (
+                        unbind_helper, unbind_path, interface), shell=True)
 
     def tty(self):
         ttys = []
@@ -154,7 +162,7 @@ class LsusbDevice(DeviceBase):
             if os.path.exists(tty_path):
                 names = list(os.listdir(tty_path))
                 assert len(names) == 1
-                ttys.append('/dev/'+names[0])
+                ttys.append('/dev/' + names[0])
         return ttys
 
 
@@ -182,6 +190,6 @@ def find_usb_devices():
         address = int(bits.group('address'), base=10)
         devobjs.append(LsusbDevice(
             vid=vid, pid=pid, path=Path(bus=bus, address=address),
-            ))
+        ))
 
     return devobjs

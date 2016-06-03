@@ -15,17 +15,21 @@ import usb.util
 
 from .base import *
 
+
 class LibDevice(DeviceBase):
+
     def inuse(self, dev=None):
         try:
             if dev is None:
-                dev = usb.core.find(bus=self.path.bus, address=self.path.address)
+                dev = usb.core.find(bus=self.path.bus,
+                                    address=self.path.address)
 
             #config = dev.get_active_configuration()
             active = False
             for config in dev:
                 for i, inf in enumerate(config):
-                    inf_active = dev.is_kernel_driver_active(inf.bInterfaceNumber)
+                    inf_active = dev.is_kernel_driver_active(
+                        inf.bInterfaceNumber)
                     active = active or inf_active
             return active
         except usb.core.USBError:
@@ -67,5 +71,6 @@ def find_usb_devices():
         except TypeError:
             pass
 
-        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, did=did, serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
+        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, did=did,
+                                 serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
     return devobjs
