@@ -10,6 +10,10 @@ conda:
 	conda install openocd
 	pip install pyusb
 
+clean-conda:
+	rm -rf Miniconda3-latest-Linux-x86_64.sh
+	rm -rf conda
+
 bin/unbind-helper:
 	echo "Making setuid unbind helper program."
 	gcc -std=c11 unbind-helper.c -o $@
@@ -29,6 +33,12 @@ root-test:
 
 clean:
 	sudo rm bin/unbind-helper
+
+read-dna:
+	./hdmi2usb-mode-switch.py --mode=jtag
+	which openocd
+	openocd --file board/numato_opsis.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
+	./openocd_readdna.py numato-opsis
 
 install-udev:
 	sudo cp 52-hdmi2usb.rules /etc/udev/rules.d/
