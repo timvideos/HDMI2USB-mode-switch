@@ -28,7 +28,7 @@ unbind-helper:
 
 check:
 	pep8 hdmi2usb --ignore=E402
-	# FIXME: Should have some type of tests....
+	pep8 *.py
 
 fix:
 	autopep8 -v -r -i -a -a hdmi2usb

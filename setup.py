@@ -16,7 +16,10 @@ setup(
     name="hdmi2usb.modeswitch",
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
-    description="Module and command line tool for control the mode of HDMI2USB devices.",
+    description=(
+        "Module and command line tool for control the mode of HDMI2USB "
+        "devices."
+    ),
     long_description=open("README.md").read(),
     author="TimVideos' HDMI2USB project",
     author_email="hdmi2usb@googlegroups.com",
@@ -45,7 +48,8 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [x+"=hdmi2usb.modeswitch.cli:main" for x in (
-            "hdmi2usb-find-board", "hdmi2usb-mode-switch", "hdmi2usb-manage-firmware",
+            "hdmi2usb-find-board", "hdmi2usb-mode-switch",
+            "hdmi2usb-manage-firmware",
             "opsis-find-board", "opsis-mode-switch", "opsis-manage-firmware",
             "atlys-find-board", "atlys-mode-switch", "atlys-manage-firmware",
         )],
