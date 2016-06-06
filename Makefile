@@ -26,6 +26,13 @@ bin/unbind-helper:
 unbind-helper:
 	make bin/unbind-helper
 
+check:
+	pep8 hdmi2usb
+	# FIXME: Should have some type of tests....
+
+fix:
+	autopep8 -v -r -i -a -a hdmi2usb
+
 test:
 	python hdmi2usb_test.py
 

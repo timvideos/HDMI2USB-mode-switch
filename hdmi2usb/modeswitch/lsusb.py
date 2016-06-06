@@ -27,7 +27,10 @@ def find_unbind_helper():
 
     for path in callpaths:
         pathret = subprocess.call(
-            path, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            path,
+            shell=True,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL)
         if pathret == 255:
             return path
 
@@ -105,8 +108,7 @@ def find_sys(path, mapping=FIND_SYS_CACHE):
 class LsusbDevice(DeviceBase):
 
     def __new__(cls, *args, **kw):
-        syspaths = find_sys(kw['path'])
-        syspaths.sort()
+        syspaths = sorted(find_sys(kw['path']))
 
         # Get the did/serialno number from sysfs
         did = None

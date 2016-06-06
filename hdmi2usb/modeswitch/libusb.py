@@ -71,6 +71,13 @@ def find_usb_devices():
         except TypeError:
             pass
 
-        devobjs.append(LibDevice(vid=dev.idVendor, pid=dev.idProduct, did=did,
-                                 serialno=serialno, path=Path(bus=dev.bus, address=dev.address)))
+        devobjs.append(
+            LibDevice(
+                vid=dev.idVendor,
+                pid=dev.idProduct,
+                did=did,
+                serialno=serialno,
+                path=Path(
+                    bus=dev.bus,
+                    address=dev.address)))
     return devobjs

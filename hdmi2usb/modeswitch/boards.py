@@ -267,19 +267,25 @@ def find_boards():
                     Board(dev=device, type='opsis', state="jtag"))
             else:
                 logging.warn(
-                    "Unknown usb-jtag device version! %r (%s)", device.did, device)
+                    "Unknown usb-jtag device version! %r (%s)",
+                    device.did,
+                    device)
                 continue
 
     # FIXME: This is a horrible hack!?@
     # Patch the Atlys board so the exart_uart is associated with it.
     if exart_uarts:
         atlys_boards = [b for b in all_boards if b.type == "atlys"]
-        sys.stderr.write(" Found exart-uarts at %s associating with Atlys at %s\n" % (
-            exart_uarts, atlys_boards))
+        sys.stderr.write(
+            " Found exart-uarts at %s associating with Atlys at %s\n" %
+            (exart_uarts, atlys_boards))
         assert len(exart_uarts) == len(atlys_boards)
         assert len(atlys_boards) == 1
 
-        def extra_tty(uart=exart_uarts[0], board=atlys_boards[0], prefer=args.prefer_hardware_serial):
+        def extra_tty(
+                uart=exart_uarts[0],
+                board=atlys_boards[0],
+                prefer=args.prefer_hardware_serial):
             if prefer:
                 return uart.tty + board.dev.tty
             else:
