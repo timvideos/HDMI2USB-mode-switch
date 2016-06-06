@@ -11,6 +11,7 @@ install:
   - git fetch --unshallow && git fetch --tags
   - git describe
   - make conda
+  - python setup.py version
 
 script:
   - export PATH=$PWD/conda/bin:$PATH
