@@ -1,0 +1,3 @@
+# Grant permissions to Digilent usb devices.
+ATTR{idVendor}=="1443", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
+ATTR{idVendor}=="04e2", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1" # Exar USB on the Atlys

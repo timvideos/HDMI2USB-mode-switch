@@ -35,12 +35,19 @@ clean-unbind-helper:
 
 # udev rules
 install-udev:
-	sudo cp 52-hdmi2usb.rules /etc/udev/rules.d/
-	sudo chmod 644 /etc/udev/rules.d/52-hdmi2usb.rules
-	sudo chown root:root /etc/udev/rules.d/52-hdmi2usb.rules
+	cd udev; \
+	for RULE in *.rules; do \
+		sudo cp $$RULE /etc/udev/rules.d/; \
+		sudo chmod 644 /etc/udev/rules.d/$$RULE; \
+		sudo chown root:root /etc/udev/rules.d/$$RULE; \
+	done
 
 uninstall-udev:
-	sudo rm /etc/udev/rules.d/52-hdmi2usb.rules
+	cd udev; \
+	for RULE in *.rules; do \
+		sudo rm -f /etc/udev/rules.d/$$RULE; \
+	done
+	sudo rm -r /etc/udev/rules.d/52-hdmi2usb.rules
 
 # Useful python targets
 version:

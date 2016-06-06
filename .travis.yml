@@ -8,8 +8,11 @@ branches:
 sudo: true
 
 install:
-  - git fetch --unshallow && git fetch --tags
+  # Undoing travis "optimisations" of the git repository
+  - git fetch --unshallow || true
+  - git fetch --tags || true
   - git describe
+  # Actually install
   - make conda
   - make unbind-helper || true
 

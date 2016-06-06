@@ -1,0 +1,2 @@
+# Grant permissions to ixo-usb-jtag devices.
+ATTR{idVendor}=="16c0", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"

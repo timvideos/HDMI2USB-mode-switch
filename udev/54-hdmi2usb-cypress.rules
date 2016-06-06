@@ -1,0 +1,2 @@
+# Grant permissions to unconfigured cypress chips.
+ATTR{idVendor}=="04b4", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"

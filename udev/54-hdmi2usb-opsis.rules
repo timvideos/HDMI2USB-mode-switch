@@ -1,0 +1,2 @@
+# Grant permissions to Numato USB devices.
+ATTR{idVendor}=="2a19", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
