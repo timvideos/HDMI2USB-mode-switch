@@ -9,6 +9,8 @@ conda:
 	conda config --add channels timvideos
 	conda install openocd
 	pip install pyusb
+	pip install pep8
+	pip install autopep8
 	python setup.py develop
 
 clean-conda:

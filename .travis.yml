@@ -1,0 +1,19 @@
+language: c
+
+# Don't do CI for WIP branches
+branches:
+  except:
+    - /^WIP-.*$/
+
+sudo: false
+
+install:
+  - git fetch --unshallow && git fetch --tags
+  - git describe
+  - make conda
+
+script:
+  - export PATH=$PWD/conda/bin:$PATH
+  - python setup.py test
+  - make check
+
