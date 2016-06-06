@@ -14,7 +14,6 @@ install:
   - python setup.py version
 
 script:
-  - export PATH=$PWD/conda/bin:$PATH
-  - python setup.py test
   - make check
+  - make test
 
