@@ -23,8 +23,8 @@ bin/unbind-helper:
 	sudo chmod u+s $@
 	ls -l $@
 
-unbind-helper: bin/unbind-helper
-	echo ""
+unbind-helper:
+	make bin/unbind-helper
 
 test:
 	python hdmi2usb_test.py

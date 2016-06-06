@@ -157,44 +157,33 @@ def main():
             if args.mode:
                 newmode = args.mode
                 if newmode == "jtag":
-                    firmware = os.path.join(
-                        "fx2-firmware",
-                        board.type,
-                        "ixo-usb-jtag.hex")
+                    # Works on all boards
+                    pass
 
-                elif newmode == "serial":
-                    assert board.type == "opsis", "serial mode only valid on the opsis."
-                    firmware = os.path.join(
-                        "fx2-firmware",
-                        board.type,
-                        "usb-uart.ihx")
-
-                elif newmode == "eeprom":
-                    firmware = os.path.join(
-                        "fx2-firmware",
-                        board.type,
-                        "eeprom.ihx")
+                elif newmode in ("serial", "eeprom"):
+                    assert board.type == "opsis", "{} mode only valid on the opsis.".format(
+                        newmode)
 
                 elif newmode == "operational":
                     raise NotImplemented("Not yet finished...")
                 else:
-                    raise NotImplemented("Unknown mode...")
+                    raise NotImplemented("Unknown mode {}".format(newmode))
 
                 if board.state != newmode:
                     if args.verbose:
                         sys.stderr.write("Going from %s to %s\n" %
                                          (board.state, newmode))
-                        sys.stderr.write("Using FX2 firmware %s\n" % firmware)
 
                     old_board = board
-                    boards.load_fx2(old_board, firmware, verbose=args.verbose)
+                    boards.load_fx2(old_board, mode=newmode,
+                                    verbose=args.verbose)
 
                     starttime = time.time()
                     while True:
                         found_boards = find_boards(args)
 
                         found_board = None
-                        for new_board in boards:
+                        for new_board in found_boards:
                             if new_board.type == old_board.type:
                                 if new_board.state == old_board.state:
                                     continue
@@ -221,7 +210,7 @@ def main():
 
             # Load firmware onto the fx2
             if args.load_fx2_firmware:
-                boards.load_fx2(board, args.load_fx2_firmware,
+                boards.load_fx2(board, filename=args.load_fx2_firmware,
                                 verbose=args.verbose)
 
             # Load gateware onto the FPGA

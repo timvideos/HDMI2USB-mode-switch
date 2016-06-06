@@ -25,26 +25,56 @@ def assert_in(needle, haystack):
     assert needle in haystack, "%r not in %r" % (needle, haystack)
 
 
-BOARD_TYPES = ['opsis', 'atlys']
+def firmware_path(filepath):
+    ourpath = os.path.dirname(__file__)
+    firmwaredir = os.path.abspath(os.path.realpath(
+        os.path.join(ourpath, '..', 'firmware')))
+    assert os.path.exists(firmwaredir)
+
+    # FIXME: On Linux we should check "/lib/firmware/" too?
+    fullname = os.path.join(firmwaredir, filepath)
+    fullname = os.path.abspath(os.path.realpath(fullname))
+    assert os.path.exists(fullname), fullname
+    return fullname
+
+
+BOARD_TYPES = [
+    'opsis',
+    'atlys',
+]
 BOARD_NAMES = {
     'atlys': "Digilent Atlys",
     'opsis': "Numato Opsis",
 }
-BOARD_STATES = ['unconfigured', 'jtag', 'serial', 'eeprom', 'operational']
+BOARD_STATES = [
+    'unconfigured',
+    'jtag',
+    'serial',
+    'eeprom',
+    'operational',
+]
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
     'hw_opsis': 'opsis',
 }
 USBJTAG_RMAPPING = {v: k for k, v in USBJTAG_MAPPING.items()}
+
 OPENOCD_MAPPING = {
     'atlys': "board/digilent_atlys.cfg",
     'opsis': "board/numato_opsis.cfg",
 }
 OPENOCD_FLASHPROXY = {
-    'opsis': 'flash_proxy/opsis/bscan_spi_xc6slx45t.bit',
-    'atlys': 'flash_proxy/atlys/bscan_spi_xc6slx45.bit',
+    'opsis': firmware_path('spartan6/opsis/bscan_spi_xc6slx45t.bit'),
+    'atlys': firmware_path('spartan6/atlys/bscan_spi_xc6slx45.bit'),
 }
+
+FX2_MODE_MAPPING = {
+    'jtag': 'ixo-usb-jtag.hex',
+    'serial': 'usb-uart.ihx',
+    'eeprom': 'eeprom.ihx',
+}
+
 
 BoardBase = namedtuple("Board", ["dev", "type", "state"])
 
@@ -55,14 +85,21 @@ class Board(BoardBase):
         return self.dev.tty()
 
 
-def load_fx2(board, filename, verbose=False):
+def load_fx2(board, mode=None, filename=None, verbose=False):
+    if mode is not None:
+        assert filename is None
+        filename = firmware_path(
+            'fx2/{}/{}'.format(board.type, FX2_MODE_MAPPING[mode]))
+
     if board.dev.inuse():
         if verbose:
             sys.stderr.write("Detaching drivers from board.\n")
         board.dev.detach()
 
-    filepath = os.path.abspath(filename)
+    filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
+
+    sys.stderr.write("Using FX2 firmware %s\n" % filename)
 
     cmdline = "fxload -t fx2lp".split()
     cmdline += ["-D", str(board.dev.path)]

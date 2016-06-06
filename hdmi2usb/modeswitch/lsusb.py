@@ -20,7 +20,8 @@ from .base import *
 
 def find_unbind_helper():
     callpaths = [
-        os.path.join(os.path.dirname(__file__), "bin", "unbind-helper"),
+        os.path.join(os.path.dirname(__file__), "..",
+                     "..", "bin", "unbind-helper"),
         "unbind-helper",
     ]
 

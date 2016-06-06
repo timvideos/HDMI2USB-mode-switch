@@ -37,6 +37,7 @@ setup(
     packages=find_packages(),
 #    package_data={},
 #    data_files=[
+#        ('hdmi2usb/firmware', [....])
 #        ('/usr/bin/', ['unbind-helper']),
 #        ('/etc/udev/rules.d/', ['52-hdmi2usb.rules']),
 #    ],

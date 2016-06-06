@@ -12,6 +12,7 @@ currently loaded onto it.
 import os
 from collections import namedtuple
 
+
 PathBase = namedtuple('PathBase', ['bus', 'address'])
 
 
