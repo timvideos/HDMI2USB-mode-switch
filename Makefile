@@ -43,6 +43,9 @@ uninstall-udev:
 	sudo rm /etc/udev/rules.d/52-hdmi2usb.rules
 
 # Useful python targets
+version:
+	python setup.py version
+
 check:
 	pep8 hdmi2usb --ignore=E402
 	pep8 *.py

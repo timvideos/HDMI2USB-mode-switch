@@ -11,9 +11,9 @@ install:
   - git fetch --unshallow && git fetch --tags
   - git describe
   - make conda
-  - python setup.py version
 
 script:
+  - make version
   - make check
   - make test
 
