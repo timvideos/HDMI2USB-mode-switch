@@ -5,7 +5,7 @@ branches:
   except:
     - /^WIP-.*$/
 
-sudo: false
+sudo: true
 
 install:
   - git fetch --unshallow && git fetch --tags
