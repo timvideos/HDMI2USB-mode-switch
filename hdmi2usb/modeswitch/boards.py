@@ -113,7 +113,7 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
     try:
         output = subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        if not b"can't modify CPUCS: Protocol error\n" in e.stdout:
+        if b"can't modify CPUCS: Protocol error\n" not in e.stdout:
             print(e.stdout)
             raise
 
@@ -122,7 +122,8 @@ def flash_fx2(board, filename, verbose=False):
     assert board.state == "eeprom", board
     assert not board.dev.inuse()
 
-    assert board.type == "opsis", "Only support flashing the Opsis for now (not %s)." % board.type
+    assert board.type == "opsis", (
+        "Only support flashing the Opsis for now (not %s)." % board.type)
 
 
 def load_fpga(board, filename, verbose=False):
@@ -176,7 +177,7 @@ def flash_fpga(board, filename, verbose=False):
     if verbose > 2:
         script += ["flash info 0"]
 
-    #script += ["flash read_bank 0 backup.bit 0 0x01000000"]
+    # script += ["flash read_bank 0 backup.bit 0 0x01000000"]
 
     script += [
         "jtagspi_program {} 0x{:x}".format(filename, 0),
@@ -207,8 +208,8 @@ def find_boards():
             all_boards.append(
                 Board(dev=device, type="atlys", state="unconfigured"))
 
-        # The Numato Opsis will boot in the following mode when the EEPROM is not
-        # set up correctly.
+        # The Numato Opsis will boot in the following mode when the EEPROM is
+        # not set up correctly.
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
         # Bus 003 Device 091: ID 04b4:8613 Cypress Semiconductor Corp.
         # CY7C68013 EZ-USB FX2 USB 2.0 Development Kit
@@ -216,8 +217,8 @@ def find_boards():
             all_boards.append(
                 Board(dev=device, type="opsis", state="unconfigured"))
 
-        # The preproduction Numato Opsis shipped to Champions will boot into this
-        # mode by default.
+        # The preproduction Numato Opsis shipped to Champions will boot into
+        # this mode by default.
         # The production Numato Opsis will fallback to booting in the following
         # mode when the FPGA doesn't have EEPROM emulation working.
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#unconfigured-mode
@@ -227,8 +228,8 @@ def find_boards():
                 Board(dev=device, type="opsis", state="unconfigured"))
 
         # The production Numato Opsis will boot in this mode when SW1 is held
-        # during boot, or when held for 5 seconds with correctly configured FPGA
-        # gateware.
+        # during boot, or when held for 5 seconds with correctly configured
+        # FPGA gateware.
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#usb-jtag-and-usb-uart-mode
         # Bus 003 Device 091: ID 2a19:5441 Numato Opsis (JTAG and USB Mode)
         elif device.vid == 0x2A19 and device.pid == 0x5441:

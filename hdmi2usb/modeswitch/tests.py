@@ -13,7 +13,7 @@ def test_libusb_and_lsusb_equal():
     libusb_devices = libusb.find_usb_devices()
     lsusb_devices = lsusb.find_usb_devices()
     for libobj, lsobj in zip(sorted(libusb_devices), sorted(lsusb_devices)):
-        #print("%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers()))
+        # print("%s -- lib: %-40s ls: %-40s -- %-40s  drivers: %s" % (libobj.path, libobj, lsobj, find_sys(libobj.path)[0], lsobj.drivers()))  # noqa
         print("%s -- lib: %-60s ls: %-60s -- %-40s  drivers: %s" %
               (libobj.path, libobj, lsobj, libobj.path, lsobj.drivers()))
         assert libobj.vid == lsobj.vid, "vid: %r == %r" % (

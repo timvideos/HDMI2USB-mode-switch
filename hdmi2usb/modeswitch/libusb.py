@@ -24,7 +24,7 @@ class LibDevice(DeviceBase):
                 dev = usb.core.find(bus=self.path.bus,
                                     address=self.path.address)
 
-            #config = dev.get_active_configuration()
+            # config = dev.get_active_configuration()
             active = False
             for config in dev:
                 for i, inf in enumerate(config):

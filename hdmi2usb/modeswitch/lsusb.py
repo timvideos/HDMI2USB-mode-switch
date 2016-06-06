@@ -175,7 +175,7 @@ Device = LsusbDevice
 def find_usb_devices():
     FIND_SYS_CACHE.clear()
 
-    # 'Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub'
+    # 'Bus 002 Device 002: ID 8087:0024 Intel Corp. Integrated Rate Matching Hub'  # noqa
     lsusb_device_regex = re.compile(
         "Bus (?P<bus>[0-9]+) Device (?P<address>[0-9]+):"
         " ID (?P<vid>[0-9a-f]+):(?P<pid>[0-9a-f]+)")

@@ -28,19 +28,27 @@ def args_parser(board, mode):
     parser = argparse.ArgumentParser(description=__doc__)
 
     # , aliases=['--debug', '-d'])
-    parser.add_argument('--verbose', '-v', action='count',
-                        help='Output more information.', default=0)
+    parser.add_argument(
+        '--verbose',
+        '-v',
+        action='count',
+        default=0,
+        help='Output more information.')
 
     parser.add_argument(
         '--by-type',
-        help='Find board with a given type.',
-        choices=boards.BOARD_TYPES)
+        choices=boards.BOARD_TYPES,
+        help='Find board with a given type.')
 
     parser.add_argument(
-        '--by-mac', help='Find board with the given MAC address.')
+        '--by-mac',
+        help='Find board with the given MAC address.')
     parser.add_argument(
-        '--by-dna', help='Find board with the given Device DNA.')
-    parser.add_argument('--by-position', help="""\
+        '--by-dna',
+        help='Find board with the given Device DNA.')
+    parser.add_argument(
+        '--by-position',
+        help="""\
 Find board using a given position in the USB structure.
 
 Example:
@@ -48,17 +56,21 @@ Example:
  5-6.7.8 - Bus 5, Port 2 (which is a hub), Port 7 (which is a hub), Port 8 (which is a hub)
 
 While this *should* be static across reboots, but sadly on some machines it isn't :(
-""")
+""")  # noqa
     parser.add_argument(
         '--by-mode',
         help=argparse.SUPPRESS)  # help='Find board in a given mode.', )
 
     parser.add_argument(
         '--all',
-        help='Do operation on all boards, otherwise will error if multiple boards are found.')
+        help="""\
+Do operation on all boards, otherwise will error if multiple boards are found.
+""")
 
-    parser.add_argument('--get-usbfs', action='store_true',
-                        help='Return the /dev/bus/usb path for a device.')
+    parser.add_argument(
+        '--get-usbfs',
+        action='store_true',
+        help='Return the /dev/bus/usb path for a device.')
     parser.add_argument(
         '--get-sysfs',
         action='store_true',
@@ -68,8 +80,10 @@ While this *should* be static across reboots, but sadly on some machines it isn'
         action='store_true',
         help='Return the state the device is in. Possible states are: %r' %
         boards.BOARD_STATES)
-    parser.add_argument('--get-video-device', action='store_true',
-                        help='Get the primary video device path.')
+    parser.add_argument(
+        '--get-video-device',
+        action='store_true',
+        help='Get the primary video device path.')
     parser.add_argument(
         '--get-serial-device',
         action='store_true',
@@ -84,19 +98,25 @@ While this *should* be static across reboots, but sadly on some machines it isn'
         help='Switch mode to given state.',
         choices=boards.BOARD_STATES)
     # FPGA
-    parser.add_argument('--load-gateware', help='Load gateware onto the FPGA.')
+    parser.add_argument(
+        '--load-gateware',
+        help='Load gateware onto the FPGA.')
     parser.add_argument(
         '--flash-gateware',
         help='Flash gateware onto the SPI flash which the FPGA boots from.')
     # Cypress FX2
-    parser.add_argument('--load-fx2-firmware',
-                        help='Load firmware file onto the Cypress FX2.')
-    parser.add_argument('--flash-fx2-eeprom',
-                        help='Flash the FX2 eeprom with data.')
+    parser.add_argument(
+        '--load-fx2-firmware',
+        help='Load firmware file onto the Cypress FX2.')
+    parser.add_argument(
+        '--flash-fx2-eeprom',
+        help='Flash the FX2 eeprom with data.')
     #
     parser.add_argument(
         '--load-lm32-firmware',
-        help='Load firmware file onto the lm32 Soft-Core running inside the FPGA.')
+        help="""\
+Load firmware file onto the lm32 Soft-Core running inside the FPGA.
+""")
 
     parser.add_argument(
         '--timeout',
@@ -180,8 +200,8 @@ def main():
                     pass
 
                 elif newmode in ("serial", "eeprom"):
-                    assert board.type == "opsis", "{} mode only valid on the opsis.".format(
-                        newmode)
+                    assert board.type == "opsis", (
+                        "{} mode only valid on the opsis.".format(newmode))
 
                 elif newmode == "operational":
                     raise NotImplemented("Not yet finished...")
@@ -216,7 +236,8 @@ def main():
                             board = found_board
                             break
 
-                        if args.timeout and starttime - time.time() > args.timeout:
+                        if (args.timeout and starttime -
+                                time.time() > args.timeout):
                             raise SystemError("Timeout!")
 
                     if args.verbose:
@@ -275,10 +296,3 @@ def main():
 
         if args.get_serial_device:
             print(board.tty()[0])
-
-
-"""
-        if board.state == "unconfigured":
-            sys.stderr.write(" Configure with 'fxload -t fx2lp -D %s -I %s'\n" % (
-                ))
-"""

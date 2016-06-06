@@ -27,7 +27,7 @@ unbind-helper:
 	make bin/unbind-helper
 
 check:
-	pep8 hdmi2usb
+	pep8 hdmi2usb --ignore=E402
 	# FIXME: Should have some type of tests....
 
 fix:
