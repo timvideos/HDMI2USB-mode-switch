@@ -54,6 +54,7 @@ fix:
 	autopep8 -v -r -i -a -a hdmi2usb
 
 test:
+	python -m "hdmi2usb.modeswitch.tests"
 	python setup.py test
 
 root-test:
