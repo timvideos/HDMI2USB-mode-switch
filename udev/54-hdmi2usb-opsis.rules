@@ -1,2 +1,17 @@
 # Grant permissions to Numato USB devices.
-ATTR{idVendor}=="2a19", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+# In unconfigured mode
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5440", MODE:="0666"
+
+# In JTAG/firmware upload mode
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5441", MODE:="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5441", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1"
+
+# In production mode
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5442", MODE:="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5442", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5442", MODE:="0666"
+
+# TOFE LowSpeedIO board
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5445", MODE:="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="5445", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1"

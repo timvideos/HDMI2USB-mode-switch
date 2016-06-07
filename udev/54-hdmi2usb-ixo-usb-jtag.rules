@@ -1,2 +1,3 @@
 # Grant permissions to ixo-usb-jtag devices.
-ATTR{idVendor}=="16c0", MODE:="666", ENV{ID_MM_DEVICE_IGNORE}="1"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", MODE:="0666"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1"

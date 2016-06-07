@@ -202,12 +202,37 @@ def find_boards():
     all_boards = []
     exart_uarts = []
     for device in usbapi.find_usb_devices():
+        if False:
+            pass
+
+        # Digilent Atlys
+        # --------------------------
         # Digilent Atlys board with stock "Adept" firmware
         # Bus 003 Device 019: ID 1443:0007 Digilent Development board JTAG
         if device.vid == 0x1443 and device.pid == 0x0007:
             all_boards.append(
                 Board(dev=device, type="atlys", state="unconfigured"))
 
+        # Digilent Atlys board unconfigured mode with Openmoko ID
+        # Bus 003 Device 019: ID 1d50:60b5
+        elif device.vid == 0x1d50 and device.pid == 0x60b5:
+            all_boards.append(
+                Board(dev=device, type="atlys", state="unconfigured"))
+
+        # Digilent Atlys board JTAG/firmware upgrade mode with Openmoko ID
+        # Bus 003 Device 019: ID 1d50:60b6
+        elif device.vid == 0x1d50 and device.pid == 0x60b6:
+            all_boards.append(
+                Board(dev=device, type="atlys", state="jtag"))
+
+        # Digilent Atlys board JTAG/firmware upgrade mode with Openmoko ID
+        # Bus 003 Device 019: ID 1d50:60b7
+        elif device.vid == 0x1d50 and device.pid == 0x60b7:
+            all_boards.append(
+                Board(dev=device, type="atlys", state="operational"))
+
+        # Numato Opsis
+        # --------------------------
         # The Numato Opsis will boot in the following mode when the EEPROM is
         # not set up correctly.
         # http://opsis.hdmi2usb.tv/getting-started/usb-ids.html#failsafe-mode
@@ -252,6 +277,8 @@ def find_boards():
             all_boards.append(
                 Board(dev=device, type="opsis", state="operational"))
 
+        # ixo-usb-jtag
+        # --------------------------
         # Boards loaded with the ixo-usb-jtag firmware from mithro's repo
         # https://github.com/mithro/ixo-usb-jtag
         # Bus 003 Device 090: ID 16c0:06ad Van Ooijen Technische Informatica
@@ -274,7 +301,7 @@ def find_boards():
                 continue
 
     # FIXME: This is a horrible hack!?@
-    # Patch the Atlys board so the exart_uart is associated with it.
+    # Patch the Atlys board so the exar_uart is associated with it.
     if exart_uarts:
         atlys_boards = [b for b in all_boards if b.type == "atlys"]
         sys.stderr.write(
