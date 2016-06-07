@@ -18,6 +18,7 @@ device.
 # Examining udev data
 
 ```
+udevadm info --attribute-walk --name=/dev/ttyACM0
 udevadm test /sys/class/tty/ttyACM0 2>&1 | less
 udevadm test /sys/class/video4linux/video0 2>&1 | less
 ```
