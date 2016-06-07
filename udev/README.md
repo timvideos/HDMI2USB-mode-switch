@@ -22,4 +22,5 @@ udevadm info --attribute-walk --name=/dev/ttyACM0
 udevadm test /sys/class/tty/ttyACM0 2>&1 | less
 udevadm test /sys/class/video4linux/video0 2>&1 | less
 ```
- 
+
+Oracle has a bunch of helpful info at https://docs.oracle.com/cd/E37670_01/E41138/html/ch07s03.html 
