@@ -1,6 +1,7 @@
 
 # conda
 export PATH := $(shell pwd)/conda/bin:$(PATH)
+
 conda:
 	wget -c https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
 	chmod a+x Miniconda3-latest-Linux-x86_64.sh
@@ -13,6 +14,9 @@ conda:
 	pip install pep8
 	pip install autopep8
 	python setup.py develop
+
+check-conda:
+	[ -d conda ]
 
 clean-conda:
 	rm -rf Miniconda3-latest-Linux-x86_64.sh
@@ -30,6 +34,9 @@ bin/unbind-helper:
 unbind-helper:
 	make bin/unbind-helper
 
+check-unbind-helper:
+	[ -e bin/unbind-helper ]
+
 clean-unbind-helper:
 	sudo rm bin/unbind-helper
 
@@ -37,9 +44,16 @@ clean-unbind-helper:
 install-udev:
 	cd udev; \
 	for RULE in *.rules; do \
-		sudo cp $$RULE /etc/udev/rules.d/; \
+		echo "Installing $$RULE to /etc/udev/rules.d/$$RULE"; \
+		sudo cp $$RULE /etc/udev/rules.d/$$RULE; \
 		sudo chmod 644 /etc/udev/rules.d/$$RULE; \
 		sudo chown root:root /etc/udev/rules.d/$$RULE; \
+	done
+
+check-udev:
+	cd udev; \
+	for RULE in *.rules; do \
+		[ -e /etc/udev/rules.d/$$RULE ]; \
 	done
 
 uninstall-udev:
@@ -47,7 +61,7 @@ uninstall-udev:
 	for RULE in *.rules; do \
 		sudo rm -f /etc/udev/rules.d/$$RULE; \
 	done
-	sudo rm -r /etc/udev/rules.d/52-hdmi2usb.rules
+	sudo rm -f /etc/udev/rules.d/52-hdmi2usb.rules
 
 # Useful python targets
 version:
@@ -73,3 +87,29 @@ read-dna:
 	which openocd
 	openocd --file board/numato_opsis.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
 
+check-setup:
+	if ! make check-conda; then \
+		make -s conda; \
+	fi
+	if ! make check-unbind-helper; then \
+		make -s unbind-helper; \
+	fi
+	if ! make check-udev; then \
+		make -s install-udev; \
+	fi
+
+all:
+	@echo "Checking setup...."
+	@make --quiet check-setup
+	@echo
+	@echo "Running code checks...."
+	@make --quiet check
+	@echo
+	@echo "Running tests...."
+	@make --quiet test
+	@echo
+	@echo "Printing version info...."
+	@make --quiet version
+	@echo
+
+.DEFAULT_GOAL := all
