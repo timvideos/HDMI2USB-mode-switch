@@ -14,4 +14,11 @@ device.
  * `54-hdmi2usb-opsis.rules` - Rules for the Numato Opsis board.
  * `54-hdmi2usb-ixo-usb-jtag.rules` - Rules for the boards when loaded with
    ixo-usb-jtag.
+
+# Examining udev data
+
+```
+udevadm test /sys/class/tty/ttyACM0 2>&1 | less
+udevadm test /sys/class/video4linux/video0 2>&1 | less
+```
  
