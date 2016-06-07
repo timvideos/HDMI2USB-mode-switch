@@ -49,6 +49,7 @@ install-udev:
 		sudo chmod 644 /etc/udev/rules.d/$$RULE; \
 		sudo chown root:root /etc/udev/rules.d/$$RULE; \
 	done
+	sudo udevadm control --reload-rules
 
 check-udev:
 	cd udev; \
