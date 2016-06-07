@@ -1,21 +1,21 @@
 # Grant permissions to Digilent usb devices.
 
 # With the Digilent firmware
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1443", ATTRS{idProduct}=="0007", MODE:="666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1443", ATTRS{idProduct}=="0007", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
 
 # In unconfigured mode
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b5", MODE:="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b5", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
 
 # In JTAG/firmware upload mode
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b6", MODE:="0666"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b6", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}:="1", ENV{ID_MM_CANDIDATE}:="0"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b6", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b6", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys", ENV{ID_MM_DEVICE_IGNORE}:="1", ENV{ID_MM_CANDIDATE}:="0"
 
 # In production mode
-SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}:="1", ENV{ID_MM_CANDIDATE}:="0"
-SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys", ENV{ID_MM_DEVICE_IGNORE}:="1", ENV{ID_MM_CANDIDATE}:="0"
+SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
 
 # Exar "USB UART" on the Atlys
 # FIXME: Add an ATTRS{idProduct} here
-SUBSYSTEM=="usb", ATTRS{idVendor}=="04e2", MODE:="0666"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="04e2", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_CANDIDATE}:="0"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="04e2", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="04e2", MODE:="0666", ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys", ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_CANDIDATE}:="0"
