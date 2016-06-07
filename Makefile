@@ -87,7 +87,14 @@ read-dna:
 	which openocd
 	openocd --file board/numato_opsis.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
 
-check-setup:
+# Global rules
+
+clean:
+	make clean-conda
+	make clean-unbind-helper
+	make uninstall-udev
+
+setup:
 	if ! make check-conda; then \
 		make -s conda; \
 	fi
@@ -100,7 +107,7 @@ check-setup:
 
 all:
 	@echo "Checking setup...."
-	@make --quiet check-setup
+	@make --quiet setup
 	@echo
 	@echo "Running code checks...."
 	@make --quiet check
