@@ -74,8 +74,13 @@ read-dna:
 	which openocd
 	openocd --file board/numato_opsis.cfg -c "init; xc6s_print_dna xc6s.tap; exit"
 
-# Global rules
+update-usb-ids:
+	rm USB-IDs.md
+	wget https://raw.githubusercontent.com/wiki/timvideos/HDMI2USB/USB-IDs.md -O USB-IDs.md
+	git add USB-IDs.md
+	git commit -m "Updating the USB-IDs.md file"
 
+# Global rules
 clean:
 	make clean-conda
 	make clean-unbind-helper
