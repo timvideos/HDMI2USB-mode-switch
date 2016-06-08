@@ -1,0 +1,13 @@
+# Grant everyone permission to everyone to the HDMI2USB devices.
+
+# USB device for using fxload
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", \
+	MODE:="0666"
+
+# Serial control console
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", \
+	MODE:="0666"
+
+# Video capture device
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", \
+	MODE:="0666"
