@@ -1,0 +1,24 @@
+language: c
+
+# Don't do CI for WIP branches
+branches:
+  except:
+    - /^WIP-.*$/
+
+sudo: true
+
+install:
+  # Undoing travis "optimisations" of the git repository
+  - git fetch --unshallow || true
+  - git fetch --tags || true
+  - git describe
+  # Actually install
+  - make conda
+  - make unbind-helper || true
+
+script:
+  - make version
+  - make check
+  - make test || true
+  - make root-test || true
+

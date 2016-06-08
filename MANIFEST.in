@@ -1,0 +1,3 @@
+graft hdmi2usb/firmware
+include hdmi2usb/_version.py
+include versioneer.py

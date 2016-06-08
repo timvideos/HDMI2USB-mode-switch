@@ -28,12 +28,12 @@ cd build
 
 #### fx2lib firmware for USB serial operation
 (
-	if [ ! -d fx2lib ]; then
-		git clone git://github.com/mithro/fx2lib.git
+	if [ ! -d fx2lib-cdc ]; then
+		git clone git://github.com/mithro/fx2lib.git fx2lib-cdc
 		git checkout cdc-usb-serialno-from-eeprom
-		cd fx2lib
+		cd fx2lib-cdc
 	else
-		cd fx2lib
+		cd fx2lib-cdc
 		git pull
 	fi
 

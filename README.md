@@ -1,3 +1,6 @@
-# HDMI2USB-mode-script
+# HDMI2USB-mode-switch
 
-Python script for figuring out the state and information about HDMI2USB boards
+Helper tool to figuring out the state and information about HDMI2USB boards and
+managing the firmware on them.
+
+FIXME: Add instructions....
