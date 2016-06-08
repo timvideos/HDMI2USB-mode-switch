@@ -38,11 +38,13 @@ setup(
         "Programming Language :: Python",
     ],
     packages=find_packages(),
+# FIXME: Populate this with information?
 #    package_data={},
 #    data_files=[
-#        ('hdmi2usb/firmware', [....])
-#        ('/usr/bin/', ['unbind-helper']),
-#        ('/etc/udev/rules.d/', ['52-hdmi2usb.rules']),
+#        ('/lib/firmware/hdmi2usb', os.walk('hdmi2usb/firmware/'),
+#        ('/usr/bin/', build?(unbind-helper)),
+#        ('/etc/udev/rules.d/', os.listdir(udev,
+#            "*-hdmi2usb-*.rules", "hdmi2usb-*.sh"),
 #    ],
     setup_requires=['setuptools-pep8'],
     include_package_data=True,
