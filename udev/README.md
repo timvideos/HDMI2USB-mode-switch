@@ -1,3 +1,8 @@
+# udev rules for HDMI2USB devices
+
+These directory contains udev rules for
+[HDMI2USB devices](https://hdmi2usb.tv). While these devices *don't need* these
+rules to operate correctly, they make things significantly nicer.
 
 These udev rules do the following things;
 
