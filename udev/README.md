@@ -6,7 +6,33 @@ rules to operate correctly, they make things significantly nicer.
 
 These udev rules do the following things;
 
- * Generate /dev/hdmi2usb symlinks.
+ * Generate `/dev/hdmi2usb` symlinks. Each entry is a directory which groups
+   together the usbdev, tty and video devices. There are three methods for
+   finding the board;
+
+   1) By number, first board == 0, second board == 1, etc.
+	```
+	/dev/hdmi2usb/by-num/all$N/{usbdev,tty,video}
+	/dev/hdmi2usb/by-num/all0/
+
+	/dev/hdmi2usb/by-num/$BOARDTYPE$N/{usbdev,tty,video}
+	/dev/hdmi2usb/by-num/opsis0/
+	```
+
+   2) By location on the USB bus;
+	```
+	/dev/hdmi2usb/by-path/usb.bus$X.port$Y{-hub.port$Z}*/{usbdev,tty,video}
+	/dev/hdmi2usb/by-path/usb.bus1.port2/
+	/dev/hdmi2usb/by-path/usb.bus3.port4-hub.port3/
+	/dev/hdmi2usb/by-path/usb.bus3.port4-hub.port3-hub.port1/
+	```
+
+   3) By serial number;
+	```
+	/dev/hdmi2usb/by-serial/$SERIALNO/{usbdev,tty,video}
+	/dev/hdmi2usb/by-serial/ffffd8803956c79a/
+	```
+
  * Grant anyone on the system permission to access the HDMI2USB boards.
  * Make modem-manager ignore the serial ports.
 
