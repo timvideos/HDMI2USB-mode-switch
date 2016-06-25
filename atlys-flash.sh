@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-./hdmi2usb-mode-switch.py --mode=jtag -v
-./hdmi2usb-mode-switch.py --flash-gateware=$1 --verbose
+hdmi2usb-mode-switch --mode=jtag -v
+hdmi2usb-mode-switch --flash-gateware=$1 --verbose
