@@ -21,6 +21,7 @@ from collections import namedtuple
 from . import lsusb as usbapi
 from . import files
 
+
 def assert_in(needle, haystack):
     assert needle in haystack, "%r not in %r" % (needle, haystack)
 
@@ -139,8 +140,9 @@ def load_fpga(board, filename, verbose=False):
     assert os.path.exists(filepath), filepath
     assert filename.endswith(".bit"), "Loading requires a .bit file"
     xfile = files.XilinxBitFile(filepath)
-    assert xfile.part == BOARD_FPGA[board.type], "Bit file must be for {} (not {})".format(
-        BOARD_FPGA[board.type], xfile.part)
+    assert xfile.part == BOARD_FPGA[board.type], (
+        "Bit file must be for {} (not {})".format(
+            BOARD_FPGA[board.type], xfile.part))
 
     script = ["init"]
     if verbose:

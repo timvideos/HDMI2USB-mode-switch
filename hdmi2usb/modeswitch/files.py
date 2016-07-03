@@ -7,8 +7,10 @@ Functions for examining different file types.
 
 import struct
 
+
 def assert_eq(a, b):
     assert a == b, "%s (%r) != %s (%r)" % (a, a, b, b)
+
 
 class XilinxBitFile(object):
     """
@@ -16,44 +18,42 @@ class XilinxBitFile(object):
     http://www.fpga-faq.com/FAQ_Pages/0026_Tell_me_about_bit_files.htm
 
     Field 1
-    2 bytes          length 0x0009           (big endian)
-    9 bytes          0f f0 0f f0 0f f0 0f f0 00
-    2 bytes          00 01
+    2 bytes     length 0x0009           (big endian)
+    9 bytes     0f f0 0f f0 0f f0 0f f0 00
+    2 bytes     00 01
 
     Field 3
-    1 byte           key 0x61                (The letter "a")
-    2 bytes          length 0x000a           (value depends on file name length)
-    10 bytes         string design name "xform.ncd" (including a trailing 0x00)
+    1 byte      key 0x61                (The letter "a")
+    2 bytes     length 0x000a           (value depends on file name length)
+    10 bytes    string design name "xform.ncd" (including a trailing 0x00)
 
     Field 4
-    1 byte           key 0x62                (The letter "b")
-    2 bytes          length 0x000c           (value depends on part name length)
-    12 bytes         string part name "v1000efg860" (including a trailing 0x00)
+    1 byte      key 0x62                (The letter "b")
+    2 bytes     length 0x000c           (value depends on part name length)
+    12 bytes    string part name "v1000efg860" (including a trailing 0x00)
 
     Field 4
-    1 byte           key 0x63                (The letter "c")
-    2 bytes          length 0x000b
-    11 bytes         string date "2001/08/10"  (including a trailing 0x00)
+    1 byte      key 0x63                (The letter "c")
+    2 bytes     length 0x000b
+    11 bytes    string date "2001/08/10" (including a trailing 0x00)
 
     Field 5
-    1 byte           key 0x64                (The letter "d")
-    2 bytes          length 0x0009
-    9 bytes          string time "06:55:04"    (including a trailing 0x00)
+    1 byte      key 0x64                (The letter "d")
+    2 bytes     length 0x0009
+    9 bytes     string time "06:55:04"  (including a trailing 0x00)
 
     Field 6
-    1 byte           key 0x65                 (The letter "e")
-    4 bytes          length 0x000c9090        (value depends on device type,
-                                               and maybe design details)
-    8233440 bytes    raw bit stream starting with 0xffffffff aa995566 sync
-                     word documented below.
+    1 byte      key 0x65                (The letter "e")
+    4 bytes     length 0x000c9090       (value depends on device type,
+                                         and maybe design details)
     """
 
     header = struct.Struct(
-        ">" # big endian
-        "H" # h1, beshort == 0x0009
-        "9s" # 0f f0 0f f0 0f f0 0f f0 00
-        "2s" # h4, null byte
-        )
+        ">"   # big endian
+        "H"   # h1, beshort == 0x0009
+        "9s"  # 0f f0 0f f0 0f f0 0f f0 00
+        "2s"  # h4, null byte
+    )
 
     sfmt = struct.Struct(">ch")
 
@@ -61,7 +61,7 @@ class XilinxBitFile(object):
     def unpack_key(cls, f):
         d = f.read(cls.sfmt.size)
         key, slen = cls.sfmt.unpack(d)
-        s = f.read(slen-1)
+        s = f.read(slen - 1)
         null = f.read(1)
         assert_eq(null, '\x00')
         return key, s
@@ -86,11 +86,11 @@ class XilinxBitFile(object):
                 key, value = self.unpack_key(f)
                 if key == 'a':
                     self.ncdname = value
-                elif key == 'b': # Part type
+                elif key == 'b':  # Part type
                     self.part = value
-                elif key == 'c': # Build date
+                elif key == 'c':  # Build date
                     self.date = value
-                elif key == 'd': # Build time
+                elif key == 'd':  # Build time
                     self.date += " " + value
                     break
 
@@ -106,7 +106,7 @@ class XilinxBitFile(object):
 
 
 class XilinxBinFile(object):
-    HEADER=b'\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xaa\x99Uf0\xa1\x00\x07'
+    HEADER = b'\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xaa\x99Uf0\xa1\x00\x07'  # noqa
 
     def __init__(self, filename):
         if not filename.endswith('.bin'):
