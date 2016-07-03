@@ -24,7 +24,7 @@ clean-conda:
 
 # Unbind helper - needs to be setuid
 bin/unbind-helper:
-	echo "Making setuid unbind helper program."
+	@echo "Making setuid unbind helper program."
 	gcc -Wall -std=c99 unbind-helper.c -o $@
 	sudo chmod 755 $@
 	sudo chown root:root $@
@@ -32,10 +32,11 @@ bin/unbind-helper:
 	ls -l $@
 
 unbind-helper:
-	make bin/unbind-helper
+	@make check-unbind-helper || make bin/unbind-helper
 
 check-unbind-helper:
-	[ -e bin/unbind-helper ]
+	@[ -e bin/unbind-helper ]
+	@[ "$$(stat -c "%a %U" bin/unbind-helper)" = "4755 root" ]
 
 clean-unbind-helper:
 	sudo rm bin/unbind-helper
@@ -111,4 +112,5 @@ all:
 	@make --quiet version
 	@echo
 
+.PHONY: bin/unbind-helper
 .DEFAULT_GOAL := all

@@ -19,6 +19,7 @@ import subprocess
 from collections import namedtuple
 
 from . import lsusb as usbapi
+from . import files
 
 
 def assert_in(needle, haystack):
@@ -53,6 +54,10 @@ BOARD_STATES = [
     'eeprom',
     'operational',
 ]
+BOARD_FPGA = {
+    'atlys': "6slx45csg324",
+    'opsis': "6slx45tfgg484",
+}
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
@@ -133,6 +138,11 @@ def load_fpga(board, filename, verbose=False):
 
     filepath = os.path.abspath(filename)
     assert os.path.exists(filepath), filepath
+    assert filename.endswith(".bit"), "Loading requires a .bit file"
+    xfile = files.XilinxBitFile(filepath)
+    assert xfile.part == BOARD_FPGA[board.type], (
+        "Bit file must be for {} (not {})".format(
+            BOARD_FPGA[board.type], xfile.part))
 
     script = ["init"]
     if verbose:
@@ -157,9 +167,12 @@ def load_fpga(board, filename, verbose=False):
 def flash_fpga(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
+    assert board.type in OPENOCD_MAPPING
 
     filepath = os.path.abspath(filename)
     assert os.path.exists(filepath), filepath
+    assert filename.endswith(".bin"), "Flashing requires a .bin file"
+    xfile = files.XilinxBinFile(filepath)
 
     assert board.type in OPENOCD_FLASHPROXY
     proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
@@ -180,7 +193,7 @@ def flash_fpga(board, filename, verbose=False):
     # script += ["flash read_bank 0 backup.bit 0 0x01000000"]
 
     script += [
-        "jtagspi_program {} 0x{:x}".format(filename, 0),
+        "jtagspi_program {} 0x{:x}".format(filepath, 0),
         "exit"
     ]
 
