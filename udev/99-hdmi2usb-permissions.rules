@@ -15,12 +15,12 @@ SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", \
 # Allow the user to unbind the kernel drivers attached to the device
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", \
 	TEST=="$sys$env{DEVPATH}/driver/unbind" \
-	RUN+="chmod 0666 $sys$env{DEVPATH}/driver/unbind"
+	RUN+="/bin/chmod 0666 $sys$env{DEVPATH}/driver/unbind"
 
 SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", \
 	TEST=="$sys$env{DEVPATH}/../../driver/unbind" \
-	RUN+="chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"
+	RUN+="/bin/chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"
 
 SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", \
 	TEST=="$sys$env{DEVPATH}/driver/unbind" \
-	RUN+="chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"
+	RUN+="/bin/chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"

@@ -26,17 +26,24 @@ def assert_in(needle, haystack):
     assert needle in haystack, "%r not in %r" % (needle, haystack)
 
 
-def firmware_path(filepath):
-    ourpath = os.path.dirname(__file__)
-    firmwaredir = os.path.abspath(os.path.realpath(
-        os.path.join(ourpath, '..', 'firmware')))
-    assert os.path.exists(firmwaredir)
+__filepath__ = os.path.dirname(__file__)
+FIRMWARE_DIR = os.path.abspath(os.path.realpath(
+    os.path.join(__filepath__, '..', 'firmware')))
+assert os.path.exists(FIRMWARE_DIR)
 
-    # FIXME: On Linux we should check "/lib/firmware/" too?
-    fullname = os.path.join(firmwaredir, filepath)
-    fullname = os.path.abspath(os.path.realpath(fullname))
-    assert os.path.exists(fullname), fullname
-    return fullname
+
+def firmware_path(filepath):
+    locations = ['']
+    locations.append(os.getcwd())
+    locations.append(FIRMWARE_DIR)
+
+    for loc in locations:
+        fullname = os.path.join(loc, filepath)
+        fullname = os.path.abspath(os.path.realpath(fullname))
+        if os.path.exists(fullname):
+            return fullname
+
+    assert False, "{} not found in {}".format(filepath, locations)
 
 
 BOARD_TYPES = [
@@ -136,7 +143,7 @@ def load_fpga(board, filename, verbose=False):
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
 
-    filepath = os.path.abspath(filename)
+    filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
     assert filename.endswith(".bit"), "Loading requires a .bit file"
     xfile = files.XilinxBitFile(filepath)
@@ -169,7 +176,7 @@ def flash_fpga(board, filename, verbose=False):
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
 
-    filepath = os.path.abspath(filename)
+    filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
     assert filename.endswith(".bin"), "Flashing requires a .bin file"
     xfile = files.XilinxBinFile(filepath)
