@@ -13,7 +13,14 @@ install:
 		sudo chmod 755 /etc/udev/rules.d/$$HELP; \
 		sudo chown root:root /etc/udev/rules.d/$$HELP; \
 	done
+	echo "udev rules installed; 'make reload' to reload udev rules"
+
+reload:
 	sudo udevadm control --reload-rules
+
+install-reload:
+	make install
+	make reload
 
 check:
 	@for RULE in *-hdmi2usb*.rules; do \
