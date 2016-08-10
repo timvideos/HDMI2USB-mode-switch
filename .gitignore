@@ -56,9 +56,14 @@ docs/_build/
 # PyBuilder
 target/
 
+# Debian stuff
+debian/files
+debian/hdmi2usb-mode-switch*
+
 # conda
 Miniconda3-latest-Linux-x86_64.sh
 conda
 
 # Helper util.
 bin/unbind-helper
+

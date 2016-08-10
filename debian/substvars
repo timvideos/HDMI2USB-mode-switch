@@ -1,0 +1,3 @@
+Description=Tool for changing the operating mode of HDMI2USB devices.
+
+Requirement=OpenOCD and fxload
