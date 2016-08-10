@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sw=4 et sts=4 ai:
 
-import sys
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
+import os
+import sys
 
 import versioneer
 
@@ -12,11 +13,10 @@ if sys.version_info[:3] < (3, 3):
     raise SystemExit("You need Python 3.3+")
 
 
-import os
 if os.environ.get('PYBUILD_NAME'):
-    setup_requires=[]
+    setup_requires = []
 else:
-    setup_requires=['setuptools-pep8']
+    setup_requires = ['setuptools-pep8']
 
 
 setup(
