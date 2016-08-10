@@ -94,6 +94,7 @@ update-usb-ids:
 clean:
 	make clean-conda
 	make clean-unbind-helper
+	git clean -d -x -f
 
 setup:
 	if ! make check-conda; then \
