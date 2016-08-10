@@ -22,5 +22,5 @@ SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", \
 	RUN+="/bin/chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"
 
 SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", \
-	TEST=="$sys$env{DEVPATH}/driver/unbind" \
+	TEST=="$sys$env{DEVPATH}/../../driver/unbind" \
 	RUN+="/bin/chmod 0666 $sys$env{DEVPATH}/../../driver/unbind"
