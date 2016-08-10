@@ -22,6 +22,15 @@ clean-conda:
 	rm -rf Miniconda3-latest-Linux-x86_64.sh
 	rm -rf conda
 
+# pypi upload
+test-upload:
+	python setup.py register -r pypitest
+	python setup.py sdist upload -r pypitest
+
+upload:
+	python setup.py register -r pypi
+	python setup.py sdist upload -r pypi
+
 # Unbind helper - needs to be setuid
 bin/unbind-helper:
 	@echo "Making setuid unbind helper program."
