@@ -47,10 +47,10 @@ def get_path_from_sysdir(dirpath):
     buspath = os.path.join(dirpath, 'busnum')
     devpath = os.path.join(dirpath, 'devnum')
     if not os.path.exists(buspath):
-        logging.info("Skipping %s (no busnum)", dirname)
+        logging.info("Skipping %s (no busnum)", buspath)
         return None
     if not os.path.exists(devpath):
-        logging.info("Skipping %s (no devnum)", dirname)
+        logging.info("Skipping %s (no devnum)", devpath)
         return None
 
     busnum = int(open(buspath, 'r').read().strip())
