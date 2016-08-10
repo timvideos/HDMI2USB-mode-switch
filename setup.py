@@ -29,13 +29,14 @@ setup(
     platforms=["Any"],
     keywords="HDL ASIC FPGA hardware design",
     classifiers=[
-        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",  # noqa
+        "Development Status :: 3 - Alpha",
         "Environment :: Console",
-        "Development Status :: Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
         "Programming Language :: Python",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Scientific/Engineering :: Electronic Design Automation (EDA)",  # noqa
     ],
     packages=find_packages(),
 # FIXME: Populate this with information?
