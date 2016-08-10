@@ -94,7 +94,6 @@ update-usb-ids:
 clean:
 	make clean-conda
 	make clean-unbind-helper
-	make uninstall-udev
 
 setup:
 	if ! make check-conda; then \
