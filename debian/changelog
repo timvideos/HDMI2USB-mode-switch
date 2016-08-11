@@ -1,0 +1,5 @@
+hdmi2usb-mode-switch (0.0.0) unstable; urgency=low
+
+  * Initial (dirty) packaging.
+
+ -- Tim 'mithro' Ansell <mithro@mithis.com>  Mon, 09 Dec 2013 02:58:24 +0000

@@ -1,0 +1,28 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+export PYBUILD_NAME=hdmi2usb.modeswitch
+
+include /usr/share/dpkg/pkg-info.mk
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_install:
+	python3 setup.py install --root=$(CURDIR)/debian/$(DEB_SOURCE) --install-layout=deb
+	# udev rules
+	mkdir -p $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
+	cp udev/*.rules $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
+	install --mode=0755 --owner=root --group=root udev/hdmi2usb-human-path-helper.sh $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
+	sed -i -e's-/etc/udev/rules.d/-/lib/udev/rules.d/-' $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/*
+	# unbind-helper
+	gcc -Wall -std=c99 unbind-helper.c -o debian/unbind-helper
+	mkdir -p $(CURDIR)/debian/$(DEB_SOURCE)-unbind-helper/usr/sbin/
+	install --mode=4755 --owner=root --group=root debian/unbind-helper $(CURDIR)/debian/$(DEB_SOURCE)-unbind-helper/usr/sbin/
+	rm debian/unbind-helper
+
+# Include the same text at the beginning of the extended description of
+# each package, and the same requirement at the end.
+override_dh_gencontrol:
+	dh_gencontrol -- -Tdebian/substvars

@@ -1,0 +1,43 @@
+Source: hdmi2usb-mode-switch
+Section: admin
+Priority: optional
+Maintainer: Tim 'mithro' Ansell <mithro@mithis.com>
+Build-Depends: debhelper (>= 9), dh-python, build-essential, git-buildpackage, python3-setuptools
+Standards-Version: 3.9.5
+X-Python3-Version: >= 3.2
+Homepage: https://hdmi2usb.tv/
+Vcs-Git: https://github.com/timvideos/HDMI2USB-mode-switch.git
+
+Package: hdmi2usb-mode-switch
+Priority: extra
+Architecture: all
+Recommends: openocd
+Depends: ${python:Depends}, ${misc:Depends}, fxload
+Description: HDMI2USB mode-switch tool
+ ${Description}
+ .
+ Tool for changing the operating mode of HDMI2USB devices.
+ .
+ ${Requirement}
+
+Package: hdmi2usb-mode-switch-unbind-helper
+Architecture: linux-any
+Depends: ${misc:Depends}
+Suggests: hdmi2usb-mode-switch-udev
+Description: HDMI2USB mode-switch driver unbinding helper
+ ${Description}
+ .
+ Tool to allow non-root users to unbind drivers from USB devices.
+ .
+ ${Requirement}
+
+Package: hdmi2usb-mode-switch-udev
+Architecture: all
+Suggests: hdmi2usb-mode-switch-unbind-helper
+Description: HDMI2USB udev rules
+ ${Description}
+ .
+ This package provides a udev rules files for HDMI2USB devices.
+ .
+ ${Requirement}
+

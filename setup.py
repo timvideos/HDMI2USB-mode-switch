@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 # vim: set ts=4 sw=4 et sts=4 ai:
 
-import sys
-from setuptools import setup
 from setuptools import find_packages
+from setuptools import setup
+import os
+import sys
 
 import versioneer
 
 
 if sys.version_info[:3] < (3, 3):
     raise SystemExit("You need Python 3.3+")
+
+
+if os.environ.get('PYBUILD_NAME'):
+    setup_requires = []
+else:
+    setup_requires = ['setuptools-pep8']
 
 
 setup(
@@ -47,7 +54,7 @@ setup(
 #        ('/etc/udev/rules.d/', os.listdir(udev,
 #            "*-hdmi2usb-*.rules", "hdmi2usb-*.sh"),
 #    ],
-    setup_requires=['setuptools-pep8'],
+    setup_requires=setup_requires,
     include_package_data=True,
     entry_points={
         "console_scripts": [x+"=hdmi2usb.modeswitch.cli:main" for x in (

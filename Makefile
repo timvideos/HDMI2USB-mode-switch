@@ -48,7 +48,7 @@ check-unbind-helper:
 	@[ "$$(stat -c "%a %U" bin/unbind-helper)" = "4755 root" ]
 
 clean-unbind-helper:
-	sudo rm bin/unbind-helper
+	if [ -e bin/unbind-helper ]; then sudo rm bin/unbind-helper; fi
 
 # udev rules
 install-udev:
@@ -94,7 +94,7 @@ update-usb-ids:
 clean:
 	make clean-conda
 	make clean-unbind-helper
-	make uninstall-udev
+	git clean -d -x -f
 
 setup:
 	if ! make check-conda; then \
