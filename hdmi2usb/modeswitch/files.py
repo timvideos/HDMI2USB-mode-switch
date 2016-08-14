@@ -63,7 +63,7 @@ class XilinxBitFile(object):
         key, slen = cls.sfmt.unpack(d)
         s = f.read(slen - 1)
         null = f.read(1)
-        assert_eq(null, '\x00')
+        assert_eq(null, b'\x00')
         return key, s
 
     def __init__(self, filename):
