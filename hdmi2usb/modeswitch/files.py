@@ -9,7 +9,7 @@ import struct
 
 
 def assert_eq(a, b):
-    assert a == b, "%s (%r) != %s (%r)" % (a, a, b, b)
+    assert a == b, "'%s' (%r) != '%s' (%r)" % (a, a, b, b)
 
 
 class XilinxBitFile(object):
