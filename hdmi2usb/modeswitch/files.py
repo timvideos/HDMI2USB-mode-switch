@@ -121,4 +121,10 @@ class XilinxBinFile(object):
 
 if __name__ == "__main__":
     import sys
-    print(XilinxBitFile(sys.argv[1]))
+    fname = sys.argv[1]
+    if fname.endswith('.bin'):
+        print(XilinxBinFile(fname))
+    elif fname.endswith('.bit'):
+        print(XilinxBitFile(fname))
+    else:
+        sys.exit(1)
