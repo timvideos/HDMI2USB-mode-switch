@@ -218,7 +218,7 @@ def flash_fpga(board, filename, verbose=False):
         subprocess.check_call(cmdline)
 
 
-def find_boards():
+def find_boards(prefer_hardware_serial=True, verbose=False):
     all_boards = []
     exart_uarts = []
     for device in usbapi.find_usb_devices():
@@ -250,6 +250,9 @@ def find_boards():
         elif device.vid == 0x1d50 and device.pid == 0x60b7:
             all_boards.append(
                 Board(dev=device, type="atlys", state="operational"))
+
+        elif device.vid == 0x04e2 and device.pid == 0x1410:
+            exart_uarts.append(device)
 
         # Numato Opsis
         # --------------------------
@@ -324,20 +327,21 @@ def find_boards():
     # Patch the Atlys board so the exar_uart is associated with it.
     if exart_uarts:
         atlys_boards = [b for b in all_boards if b.type == "atlys"]
-        sys.stderr.write(
-            " Found exart-uarts at %s associating with Atlys at %s\n" %
-            (exart_uarts, atlys_boards))
+        if verbose:
+            sys.stderr.write(
+                " Found exart-uarts at %s associating with Atlys at %s\n" %
+                (exart_uarts, atlys_boards))
         assert len(exart_uarts) == len(atlys_boards)
         assert len(atlys_boards) == 1
 
         def extra_tty(
                 uart=exart_uarts[0],
                 board=atlys_boards[0],
-                prefer=args.prefer_hardware_serial):
+                prefer=prefer_hardware_serial):
             if prefer:
-                return uart.tty + board.dev.tty
+                return uart.tty() + board.dev.tty()
             else:
-                return board.dev.tty + uart.tty
+                return board.dev.tty() + uart.tty()
 
         atlys_boards[0].tty = extra_tty
 
