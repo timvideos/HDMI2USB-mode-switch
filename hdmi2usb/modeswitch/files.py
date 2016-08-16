@@ -64,7 +64,7 @@ class XilinxBitFile(object):
         s = f.read(slen - 1)
         null = f.read(1)
         assert_eq(null, b'\x00')
-        return key, s
+        return key.decode('ascii'), s.decode('ascii')
 
     def __init__(self, filename):
         try:
@@ -92,6 +92,8 @@ class XilinxBitFile(object):
                     self.date = value
                 elif key == 'd':  # Build time
                     self.date += " " + value
+                    break
+                elif key == 'e':  # ????
                     break
 
             assert self.ncdname
