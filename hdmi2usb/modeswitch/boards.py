@@ -125,8 +125,8 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
     try:
         output = subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as e:
-        if b"can't modify CPUCS: Protocol error\n" not in e.stdout:
-            print(e.stdout)
+        if b"can't modify CPUCS: Protocol error\n" not in e.output:
+            print(e.output)
             raise
 
 
