@@ -127,7 +127,7 @@ Load firmware file onto the lm32 Soft-Core running inside the FPGA.
 
 
 def find_boards(args):
-    all_boards = boards.find_boards()
+    all_boards = boards.find_boards(verbose=args.verbose)
 
     # Filter out the boards we don't care about
     filtered_boards = []
