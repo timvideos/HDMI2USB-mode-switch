@@ -35,6 +35,9 @@ check:
 		diff -u $$HELP /etc/udev/rules.d/$$HELP || exit 1; \
 		echo " Good!"; \
 	done
+	if ! id | grep -qF '(video)'; then \
+		echo "Not a member of the video group"; exit 1; \
+	fi
 
 uninstall:
 	sudo rm -f /etc/udev/rules.d/*hdmi2usb*
