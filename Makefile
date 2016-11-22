@@ -13,7 +13,7 @@ conda:
 	pip install pyusb
 	pip install pep8
 	pip install autopep8
-	python setup.py develop
+	python3 setup.py develop
 
 check-conda:
 	[ -d conda ]
@@ -24,12 +24,12 @@ clean-conda:
 
 # pypi upload
 test-upload:
-	python setup.py register -r pypitest
-	python setup.py sdist upload -r pypitest
+	python3 setup.py register -r pypitest
+	python3 setup.py sdist upload -r pypitest
 
 upload:
-	python setup.py register -r pypi
-	python setup.py sdist upload -r pypi
+	python3 setup.py register -r pypi
+	python3 setup.py sdist upload -r pypi
 
 # Unbind helper - needs to be setuid
 bin/unbind-helper:
@@ -62,7 +62,7 @@ uninstall-udev:
 
 # Useful python targets
 version:
-	python setup.py version
+	python3 setup.py version
 
 check:
 	pep8 hdmi2usb --ignore=E402
@@ -72,9 +72,9 @@ fix:
 	autopep8 -v -r -i -a -a hdmi2usb
 
 test:
-	python -m "hdmi2usb.modeswitch.tests"
-	python hdmi2usb/modeswitch/files.py hdmi2usb/firmware/spartan6/atlys/bscan_spi_xc6slx45.bit
-	python setup.py test
+	python3 -m "hdmi2usb.modeswitch.tests"
+	python3 hdmi2usb/modeswitch/files.py hdmi2usb/firmware/spartan6/atlys/bscan_spi_xc6slx45.bit
+	python3 setup.py test
 	$(MAKE) -C udev test
 
 root-test:
