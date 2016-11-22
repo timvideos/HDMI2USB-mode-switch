@@ -75,6 +75,7 @@ test:
 	python -m "hdmi2usb.modeswitch.tests"
 	python hdmi2usb/modeswitch/files.py hdmi2usb/firmware/spartan6/atlys/bscan_spi_xc6slx45.bit
 	python setup.py test
+	$(MAKE) -C udev test
 
 root-test:
 	sudo make test
