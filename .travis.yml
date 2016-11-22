@@ -12,6 +12,8 @@ install:
   - git fetch --unshallow || true
   - git fetch --tags || true
   - git describe
+  # Deps
+  - sudo apt-get -y install posh
   # Actually install
   - make conda
   - make unbind-helper || true
@@ -21,4 +23,3 @@ script:
   - make check
   - make test || true
   - make root-test || true
-

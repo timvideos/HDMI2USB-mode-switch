@@ -24,20 +24,27 @@ install-reload:
 
 check:
 	@for RULE in *-hdmi2usb*.rules; do \
-		echo -n "Checking $$RULE.."; \
+		echo -n "Checking installed $$RULE.."; \
 		[ -e /etc/udev/rules.d/$$RULE ] || exit 1; \
 		diff -u $$RULE /etc/udev/rules.d/$$RULE || exit 1; \
 		echo " Good!"; \
 	done
 	@for HELP in hdmi2usb-*-helper.sh; do \
-		echo -n "Checking $$HELP.."; \
+		echo -n "Checking installed $$HELP.."; \
 		[ -e /etc/udev/rules.d/$$HELP ] || exit 1; \
 		diff -u $$HELP /etc/udev/rules.d/$$HELP || exit 1; \
 		echo " Good!"; \
 	done
-	if ! id | grep -qF '(video)'; then \
+	@if ! id | grep -qF '(video)'; then \
 		echo "Not a member of the video group"; exit 1; \
 	fi
+
+test:
+	@for HELP in hdmi2usb-*-helper.sh; do \
+		echo "Checking $$HELP.."; \
+		SHELL=/bin/posh posh $$HELP test || exit 1; \
+		echo " Good!"; \
+	done
 
 uninstall:
 	sudo rm -f /etc/udev/rules.d/*hdmi2usb*
