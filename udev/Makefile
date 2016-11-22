@@ -38,6 +38,11 @@ check:
 	@if ! id | grep -qF '(video)'; then \
 		echo "Not a member of the video group"; exit 1; \
 	fi
+	@for HELP in hdmi2usb-*-helper.sh; do \
+		echo "Checking $$HELP.."; \
+		SHELL=/bin/posh posh $$HELP test || exit 1; \
+		echo " Good!"; \
+	done
 
 uninstall:
 	sudo rm -f /etc/udev/rules.d/*hdmi2usb*
