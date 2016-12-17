@@ -1,7 +1,7 @@
 
 # udev rules
 install:
-	@for RULE in *-hdmi2usb*.rules; do \
+	@for RULE in *.rules; do \
 		echo "Installing $$RULE to /etc/udev/rules.d/$$RULE"; \
 		sudo cp $$RULE /etc/udev/rules.d/$$RULE; \
 		sudo chmod 644 /etc/udev/rules.d/$$RULE; \
@@ -23,7 +23,7 @@ install-reload:
 	make reload
 
 check:
-	@for RULE in *-hdmi2usb*.rules; do \
+	@for RULE in *.rules; do \
 		echo -n "Checking $$RULE.."; \
 		[ -e /etc/udev/rules.d/$$RULE ] || exit 1; \
 		diff -u $$RULE /etc/udev/rules.d/$$RULE || exit 1; \
