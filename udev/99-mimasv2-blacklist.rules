@@ -1,0 +1,10 @@
+# Make modem manager ignore the mimasv2
+#
+# It should be enough to set ID_MM_DEVICE_IGNORE:="1" but it seems many
+# versions of modem manager have a bug which makes them ignore that value.
+#
+# Setting ID_MM_CANDIDATE:="0" has the same effect but is an "internal
+# implementation detail" of modem manager.
+SUBSYSTEM=="*", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="1002", \
+	ENV{ID_MM_DEVICE_IGNORE}:="1", \
+	ENV{ID_MM_CANDIDATE}:="0"

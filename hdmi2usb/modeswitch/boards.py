@@ -142,7 +142,7 @@ def flash_fx2(board, filename, verbose=False):
         "Only support flashing the Opsis for now (not %s)." % board.type)
 
 
-def load_fpga(board, filename, verbose=False):
+def load_gateware(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
@@ -175,7 +175,7 @@ def load_fpga(board, filename, verbose=False):
         subprocess.check_call(cmdline)
 
 
-def flash_fpga(board, filename, verbose=False):
+def flash_gateware(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
@@ -205,6 +205,55 @@ def flash_fpga(board, filename, verbose=False):
 
     script += [
         "jtagspi_program {} 0x{:x}".format(filepath, 0),
+        "exit"
+    ]
+
+    cmdline = ["openocd"]
+
+    cmdline += ["-f", OPENOCD_MAPPING[board.type]]
+    cmdline += ["-c", "; ".join(script)]
+
+    if verbose == 0:
+        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
+    else:
+        if verbose > 1:
+            cmdline += ["--debug={}".format(verbose - 2)]
+        sys.stderr.write("Running %r\n" % cmdline)
+        subprocess.check_call(cmdline)
+
+
+def flash_lm32_firmware(board, filename, verbose=False):
+    assert board.state == "jtag", board
+    assert not board.dev.inuse()
+    assert board.type in OPENOCD_MAPPING
+
+    if filename is not None:
+        filepath = firmware_path(filename)
+        assert os.path.exists(filepath), filepath
+        assert filename.endswith(".fbi"), "Flashing requires a .fbi file"
+        fbifile = files.FlashBootImageFile(filepath)
+    else:
+        filepath = firmware_path("zero.bin")
+
+    assert board.type in OPENOCD_FLASHPROXY
+    proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
+    assert os.path.exists(proxypath), proxypath
+
+    script = ["init"]
+    if verbose:
+        script += ["xc6s_print_dna xc6s.tap"]
+
+    script += ["jtagspi_init 0 {}".format(proxypath)]
+
+    if verbose > 1:
+        script += ["flash banks"]
+        script += ["flash list"]
+    if verbose > 2:
+        script += ["flash info 0"]
+
+    # FIXME: This is hard coded...
+    script += [
+        "jtagspi_program {} 0x{:x}".format(filepath, 0x200000),
         "exit"
     ]
 

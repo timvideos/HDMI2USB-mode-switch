@@ -6,10 +6,61 @@ Functions for examining different file types.
 """
 
 import struct
+import binascii
 
 
 def assert_eq(a, b):
     assert a == b, "'%s' (%r) != '%s' (%r)" % (a, a, b, b)
+
+
+class FlashBootImageFile(object):
+    """
+    FlashBootImage (.fbi) file.
+
+    Used for firmware loaded from flash into main memory by the MiSoC/LiteX
+    BIOS.
+
+    Generate with something like;
+        mkmscimg -f firmware.bin -o firmware.fbi
+        python3 -m litex.soc.tools.mkmscimg -f firmware.bin -o firmware.fbi
+
+    Consists of;
+     * File Length - 32bits
+     * File CRC    - 32bits
+     * File Data   - bytes
+    """
+    header = struct.Struct(
+        ">"   # big endian
+        "I"   # flength
+        "I"   # fcrc
+    )
+
+    def __init__(self, filename):
+        try:
+            assert filename.endswith('.fbi'), "Filename should end in .fbi"
+            f = open(filename, 'rb')
+
+            # Read the header
+            data = f.read(self.header.size)
+            flength, fcrc = self.header.unpack_from(data)
+
+            fdata = f.read(flength)
+            extradata = f.read()
+            assert len(extradata) == 0, "Extra data found ({} bytes)".format(
+                len(extradata))
+
+            ccrc = binascii.crc32(fdata)
+
+            assert_eq(fcrc, ccrc)
+
+            self.len = flength
+            self.crc = ccrc
+        except AssertionError as e:
+            raise TypeError(e)
+
+    def __str__(self):
+        return "{}(len={}, crc=0x{:x})".format(
+            self.__class__.__name__, self.len, self.crc)
 
 
 class XilinxBitFile(object):
@@ -126,5 +177,7 @@ if __name__ == "__main__":
         print(XilinxBinFile(fname))
     elif fname.endswith('.bit'):
         print(XilinxBitFile(fname))
+    elif fname.endswith('.fbi'):
+        print(FlashBootImageFile(fname))
     else:
         sys.exit(1)
