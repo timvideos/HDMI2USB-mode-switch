@@ -28,7 +28,7 @@ SUBSYSTEM=="video4linux", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="60b7", \
 # Exar "USB UART" on the Atlys
 # FIXME: Add an ATTRS{idProduct} here
 SUBSYSTEM=="usb", ATTRS{idVendor}=="04e2", \
-	MODE:="0666"
+	MODE:="0660", GROUP:="video"
 SUBSYSTEM=="tty", ATTRS{idVendor}=="04e2", \
-	MODE:="0666", \
+	MODE:="0660", GROUP:="video", \
 	ENV{ID_MM_DEVICE_IGNORE}="1", ENV{ID_MM_CANDIDATE}:="0"
