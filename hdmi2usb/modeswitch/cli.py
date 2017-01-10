@@ -117,6 +117,17 @@ Do operation on all boards, otherwise will error if multiple boards are found.
         help="""\
 Load firmware file onto the lm32 Soft-Core running inside the FPGA.
 """)
+    parser.add_argument(
+        '--flash-lm32-firmware',
+        help="""\
+Flash the firmware file for the lm32 Soft-Core onto the SPI flash.
+""")
+    parser.add_argument(
+        '--clear-lm32-firmware',
+        action='store_true',
+        help="""\
+Clear the firmware file for the lm32 Soft-Core on the SPI flash.
+""")
 
     parser.add_argument(
         '--timeout',
@@ -189,7 +200,10 @@ def main():
     if mode == 'mode-switch':
         assert len(found_boards) == 1
         for board in found_boards:
-            if (args.load_gateware or args.flash_gateware) and not args.mode:
+            if not args.mode and (args.load_gateware or
+                                  args.flash_gateware or
+                                  args.flash_lm32_firmware or
+                                  args.clear_lm32_firmware):
                 args.mode = 'jtag'
 
             # Switch modes
@@ -256,12 +270,13 @@ def main():
 
             # Load gateware onto the FPGA
             elif args.load_gateware:
-                boards.load_fpga(board, args.load_gateware,
-                                 verbose=args.verbose)
+                boards.load_gateware(board, args.load_gateware,
+                                     verbose=args.verbose)
 
+            # Flash the gateware into the SPI flash on the board.
             elif args.flash_gateware:
-                boards.flash_fpga(board, args.flash_gateware,
-                                  verbose=args.verbose)
+                boards.flash_gateware(board, args.flash_gateware,
+                                      verbose=args.verbose)
 
             # Load firmware onto the lm32
             elif args.load_lm32_firmware:
@@ -270,6 +285,17 @@ def main():
                 assert board.tty
                 print("flterm something....")
                 raise NotImplemented("Not yet finished...")
+
+            # Flash the firmware into the SPI flash on the board.
+            elif args.flash_lm32_firmware:
+                boards.flash_lm32_firmware(board, args.flash_lm32_firmware,
+                                           verbose=args.verbose)
+
+            # Clear the firmware into the SPI flash on the board.
+            elif args.clear_lm32_firmware:
+                boards.flash_lm32_firmware(board, filename=None,
+                                           verbose=args.verbose)
+
 
         found_boards = find_boards(args)
 
