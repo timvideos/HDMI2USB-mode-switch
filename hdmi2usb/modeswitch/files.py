@@ -46,7 +46,8 @@ class FlashBootImageFile(object):
 
             fdata = f.read(flength)
             extradata = f.read()
-            assert len(extradata) == 0, "Extra data found ({} bytes)".format(len(extradata))
+            assert len(extradata) == 0, "Extra data found ({} bytes)".format(
+                len(extradata))
 
             ccrc = binascii.crc32(fdata)
 

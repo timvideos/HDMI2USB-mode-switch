@@ -296,7 +296,6 @@ def main():
                 boards.flash_lm32_firmware(board, filename=None,
                                            verbose=args.verbose)
 
-
         found_boards = find_boards(args)
 
     for board in found_boards:
