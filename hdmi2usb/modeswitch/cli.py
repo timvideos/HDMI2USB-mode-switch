@@ -21,6 +21,7 @@ import argparse
 from collections import namedtuple
 
 from . import boards
+from . import __version__
 
 
 def args_parser(board, mode):
@@ -34,6 +35,11 @@ def args_parser(board, mode):
         action='count',
         default=0,
         help='Output more information.')
+
+    parser.add_argument(
+        '--version',
+        action='store_true',
+        help='Output version information for *modeswitch*.')
 
     parser.add_argument(
         '--by-type',
@@ -183,6 +189,10 @@ def main():
     boards.assert_in(mode, POSSIBLE_MODES)
 
     args = args_parser(mode, board).parse_args()
+
+    if args.version:
+        print(__version__)
+        return
 
     if board != "hdmi2usb":
         args.by_type = board
