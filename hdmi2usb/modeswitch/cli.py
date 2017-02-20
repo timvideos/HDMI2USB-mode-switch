@@ -112,6 +112,7 @@ Do operation on all boards, otherwise will error if multiple boards are found.
         help='Flash gateware onto the SPI flash which the FPGA boots from.')
     parser.add_argument(
         '--reset-gateware',
+        action='store_true',
         help='Reset gateware currently running on the FPGA.')
     # Cypress FX2
     parser.add_argument(
