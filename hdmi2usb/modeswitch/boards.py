@@ -184,7 +184,7 @@ def _openocd_flash(board, filepath, location, verbose=False):
         "exit"
     ]
 
-    return _openocd_script(board, script, verbose)
+    return _openocd_script(board, script, verbose=verbose)
 
 
 def reset_gateware(board, verbose=False):
@@ -195,7 +195,7 @@ def reset_gateware(board, verbose=False):
     script += ["reset halt"]
     script += ["exit"]
 
-    return _openocd_script(board, script, verbose)
+    return _openocd_script(board, script, verbose=verbose)
 
 
 def load_gateware(board, filename, verbose=False):
@@ -215,7 +215,7 @@ def load_gateware(board, filename, verbose=False):
     script += ["reset halt"]
     script += ["exit"]
 
-    return _openocd_script(board, script, verbose)
+    return _openocd_script(board, script, verbose=verbose)
 
 
 def flash_gateware(board, filename, verbose=False):
@@ -224,7 +224,7 @@ def flash_gateware(board, filename, verbose=False):
     assert filename.endswith(".bin"), "Flashing requires a .bin file"
     xfile = files.XilinxBinFile(filepath)
 
-    _openocd_flash(board, filepath, 0, verbose)
+    _openocd_flash(board, filepath, 0, verbose=verbose)
 
 
 def flash_lm32_firmware(board, filename, verbose=False):
@@ -240,7 +240,7 @@ def flash_lm32_firmware(board, filename, verbose=False):
     else:
         filepath = firmware_path("zero.bin")
 
-    _openocd_flash(board, filepath, 0x200000, verbose)
+    _openocd_flash(board, filepath, 0x200000, verbose=verbose)
 
 
 def find_boards(prefer_hardware_serial=True, verbose=False):
