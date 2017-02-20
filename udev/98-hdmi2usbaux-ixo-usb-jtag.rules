@@ -1,0 +1,9 @@
+# Grant permissions to ixo-usb-jtag devices.
+SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", MODE:="0660", GROUP:="video"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", MODE:="0660", GROUP:="video", ENV{ID_MM_DEVICE_IGNORE}:="1", ENV{ID_MM_CANDIDATE}:="0"
+
+SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", ATTR{serial}=="hw_nexys", \
+	ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="atlys", ENV{ID_SERIAL_SHORT}:=""
+SUBSYSTEM=="usb", ATTRS{idVendor}=="16c0", ATTRS{idProduct}=="06ad", ATTR{serial}=="hw_opsis", \
+	ENV{ID_HDMI2USB}:="1", ENV{ID_HDMI2USB_BOARD}:="opsis", ENV{ID_SERIAL_SHORT}:=""
+
