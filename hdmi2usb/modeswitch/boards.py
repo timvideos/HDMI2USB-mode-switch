@@ -142,6 +142,25 @@ def flash_fx2(board, filename, verbose=False):
         "Only support flashing the Opsis for now (not %s)." % board.type)
 
 
+class OpenOCDError(subprocess.CalledProcessError):
+    def __init__(self, msg, returncode, cmd, output):
+        subprocess.CalledProcessError.__init__(
+                returncode, cmd, output)
+        self.message = """\
+OpenOCD run failure: {msg}.
+
+OpenOCD command line resulted in {returncode}
+-----
+{cmd}
+-----
+
+OpenOCD output:
+-----
+{output}
+-----
+""".format(msg=msg, returncode=returncode, cmd=cmd, output=output)
+
+
 def _openocd_script(board, script, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
@@ -150,14 +169,44 @@ def _openocd_script(board, script, verbose=False):
     cmdline = ["openocd"]
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
     cmdline += ["-c", "; ".join(script)]
+    if verbose > 1:
+        cmdline += ["--debug={}".format(verbose - 2)]
 
-    if verbose == 0:
-        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
-    else:
-        if verbose > 1:
-            cmdline += ["--debug={}".format(verbose - 2)]
+    if verbose:
         sys.stderr.write("Running %r\n" % cmdline)
-        subprocess.check_call(cmdline)
+
+    p = subprocess.Popen(cmdline, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if not verbose:
+        output, _ = p.communicate()
+    else:
+        output = []
+        while True:
+            output.append(p.stdout.readline())
+            print(output[-1])
+            if p.poll() != None:
+                break
+        output = "\n".join(output)
+
+    if p.returncode != 0:
+        raise OpenOCDError(
+            "Returned {}".format(p.retcode),
+            p.retcode,
+            cmdline,
+            output)
+
+    # Look for common errors in the OpenOCD output
+    error_strings = [
+        # DNA Failed to read correctly if this error is seen.
+        "DNA = 110000001100000011000000110000001100000011000000110000001 (0x181818181818181)",  # noqa
+
+        # JTAG Errors
+        "Warn : Bypassing JTAG setup events due to errors",
+        "Error: Trying to use configured scan chain anyway...",
+    ]
+    for err in error_strings:
+        if err not in output:
+            continue
+        raise OpenOCDError(err, p.returncode, cmdline, output)
 
 
 def _openocd_flash(board, filepath, location, verbose=False):
