@@ -110,6 +110,9 @@ Do operation on all boards, otherwise will error if multiple boards are found.
     parser.add_argument(
         '--flash-gateware',
         help='Flash gateware onto the SPI flash which the FPGA boots from.')
+    parser.add_argument(
+        '--reset-gateware',
+        help='Reset gateware currently running on the FPGA.')
     # Cypress FX2
     parser.add_argument(
         '--load-fx2-firmware',
@@ -212,6 +215,7 @@ def main():
         for board in found_boards:
             if not args.mode and (args.load_gateware or
                                   args.flash_gateware or
+                                  args.reset_gateware or
                                   args.flash_lm32_firmware or
                                   args.clear_lm32_firmware):
                 args.mode = 'jtag'
@@ -287,6 +291,10 @@ def main():
             elif args.flash_gateware:
                 boards.flash_gateware(board, args.flash_gateware,
                                       verbose=args.verbose)
+
+            # Reset the gateware running on the board.
+            elif args.reset_gateware:
+                boards.reset_gateware(board, verbose=args.verbose)
 
             # Load firmware onto the lm32
             elif args.load_lm32_firmware:
