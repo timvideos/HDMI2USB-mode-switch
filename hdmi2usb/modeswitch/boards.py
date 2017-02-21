@@ -165,6 +165,8 @@ def _openocd_script(board, script, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
+    if verbose > 1:
+        sys.stderr.write("Using OpenOCD script:\n{}\n".format(";\n".join(script)))
 
     cmdline = ["openocd"]
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
