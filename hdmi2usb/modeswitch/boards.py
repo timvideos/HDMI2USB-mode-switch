@@ -184,10 +184,10 @@ def _openocd_script(board, script, verbose=False):
         output = []
         while True:
             output.append(p.stdout.readline().decode('utf-8'))
-            print(output[-1])
+            sys.stdout.write(output[-1])
             if p.poll() != None:
                 break
-        output = "\n".join(output)
+        output = "".join(output)
 
     if p.returncode != 0:
         raise OpenOCDError(
