@@ -181,7 +181,7 @@ def _openocd_script(board, script, verbose=False):
     else:
         output = []
         while True:
-            output.append(p.stdout.readline())
+            output.append(p.stdout.readline().decode('utf-8'))
             print(output[-1])
             if p.poll() != None:
                 break
