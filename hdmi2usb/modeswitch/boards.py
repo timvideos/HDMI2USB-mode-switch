@@ -145,7 +145,7 @@ def flash_fx2(board, filename, verbose=False):
 class OpenOCDError(subprocess.CalledProcessError):
     def __init__(self, msg, returncode, cmd, output):
         subprocess.CalledProcessError.__init__(
-                returncode, cmd, output)
+            returncode, cmd, output)
         self.message = """\
 OpenOCD run failure: {msg}.
 
@@ -166,7 +166,8 @@ def _openocd_script(board, script, verbose=False):
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
     if verbose > 1:
-        sys.stderr.write("Using OpenOCD script:\n{}\n".format(";\n".join(script)))
+        sys.stderr.write(
+            "Using OpenOCD script:\n{}\n".format(";\n".join(script)))
 
     cmdline = ["openocd"]
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
@@ -189,7 +190,7 @@ def _openocd_script(board, script, verbose=False):
         while True:
             output.append(p.stdout.readline())
             sys.stdout.write(output[-1])
-            if p.poll() != None:
+            if p.poll() is not None:
                 break
         output = "".join(output)
 
