@@ -221,9 +221,7 @@ def _openocd_flash(board, filepath, location, verbose=False):
     assert os.path.exists(proxypath), proxypath
 
     script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
+    script += ["xc6s_print_dna xc6s.tap"]
     script += ["jtagspi_init 0 {}".format(proxypath)]
 
     if verbose > 1:
@@ -244,9 +242,7 @@ def _openocd_flash(board, filepath, location, verbose=False):
 
 def reset_gateware(board, verbose=False):
     script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
+    script += ["xc6s_print_dna xc6s.tap"]
     script += ["reset halt"]
     script += ["exit"]
 
@@ -263,9 +259,7 @@ def load_gateware(board, filename, verbose=False):
             BOARD_FPGA[board.type], xfile.part))
 
     script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
+    script += ["xc6s_print_dna xc6s.tap"]
     script += ["pld load 0 {}".format(filepath)]
     script += ["reset halt"]
     script += ["exit"]
