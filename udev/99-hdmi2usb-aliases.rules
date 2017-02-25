@@ -70,10 +70,10 @@ SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}!="" \
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/usbdev"
 
-SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="", \
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="" \
 	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/usbdev"
 
-SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="", \
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="" \
 	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/usbdev"
 
 # Serial control console
