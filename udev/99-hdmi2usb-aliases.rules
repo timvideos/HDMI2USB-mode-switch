@@ -4,56 +4,56 @@ ENV{ID_HDMI2USB}=="1", IMPORT{parent}="NUM_HDMI2USB*"
 # Number the devices
 # All HDMI2USB devices
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST!="/dev/hdmi2usb/boards/all0", \
+	TEST!="/dev/hdmi2usb/by-num/all0", \
 	ENV{NUM_HDMI2USB}:="0"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST!="/dev/hdmi2usb/boards/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST!="/dev/hdmi2usb/by-num/all1", \
 	ENV{NUM_HDMI2USB}:="1"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST!="/dev/hdmi2usb/boards/all2", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST!="/dev/hdmi2usb/by-num/all2", \
 	ENV{NUM_HDMI2USB}:="2"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST=="/dev/hdmi2usb/boards/all2", \
-	TEST!="/dev/hdmi2usb/boards/all3", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all2", \
+	TEST!="/dev/hdmi2usb/by-num/all3", \
 	ENV{NUM_HDMI2USB}:="3"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST=="/dev/hdmi2usb/boards/all2", \
-	TEST=="/dev/hdmi2usb/boards/all3", \
-	TEST!="/dev/hdmi2usb/boards/all4", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all2", \
+	TEST=="/dev/hdmi2usb/by-num/all3", \
+	TEST!="/dev/hdmi2usb/by-num/all4", \
 	ENV{NUM_HDMI2USB}:="4"
 
 # HDMI2USB boards
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
 	ENV{NUM_HDMI2USB_BOARD}:="0"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
 	ENV{NUM_HDMI2USB_BOARD}:="1"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
 	ENV{NUM_HDMI2USB_BOARD}:="2"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}3", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}3", \
 	ENV{NUM_HDMI2USB_BOARD}:="3"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}3", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}4", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}3", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}4", \
 	ENV{NUM_HDMI2USB_BOARD}:="4"
 
 
