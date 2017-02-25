@@ -50,8 +50,6 @@ uninstall:
 	sudo rm -f /etc/udev/rules.d/*hdmi2usb*
 
 examine:
-	make uninstall
-	make install
 	@echo -e "\n\n\n============================================="
 	@udevadm test '/sys/class/tty/ttyACM0'
 	@echo -e "\n\n\n============================================="
