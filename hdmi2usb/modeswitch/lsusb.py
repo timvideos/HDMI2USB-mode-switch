@@ -181,7 +181,14 @@ def find_usb_devices():
         " ID (?P<vid>[0-9a-f]+):(?P<pid>[0-9a-f]+)")
 
     devobjs = []
-    output = subprocess.check_output('lsusb')
+    for i in range(0, 3):
+        try:
+            output = subprocess.check_output('lsusb')
+            break
+        except subprocess.CalledProcessError as e:
+            if i < 2:
+                continue
+            raise
     for line in output.splitlines():
         line = line.decode('utf-8')
         bits = lsusb_device_regex.match(line)
