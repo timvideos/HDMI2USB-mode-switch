@@ -127,8 +127,10 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
     env['PATH'] = env['PATH'] + ':/usr/sbin:/sbin'
 
     try:
-        output = subprocess.check_output(cmdline, stderr=subprocess.STDOUT,
-                                         env=env)
+        output = subprocess.check_output(
+            cmdline, stderr=subprocess.STDOUT, env=env)
+        if verbose > 2:
+            sys.stderr.write(output.decode('utf-8'))
     except subprocess.CalledProcessError as e:
         if b"can't modify CPUCS: Protocol error\n" not in e.output:
             print(e.output)
