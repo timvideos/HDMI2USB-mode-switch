@@ -181,14 +181,14 @@ def _openocd_script(board, script, verbose=False):
     p = subprocess.Popen(
         cmdline,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        encoding='utf-8')
+        stderr=subprocess.STDOUT)
     if not verbose:
         output, _ = p.communicate()
+        output = output.decode('utf-8')
     else:
         output = []
         while True:
-            output.append(p.stdout.readline())
+            output.append(p.stdout.readline().decode('utf-8'))
             sys.stdout.write(output[-1])
             if p.poll() is not None:
                 break
