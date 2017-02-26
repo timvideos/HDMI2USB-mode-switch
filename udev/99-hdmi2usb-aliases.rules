@@ -4,56 +4,56 @@ ENV{ID_HDMI2USB}=="1", IMPORT{parent}="NUM_HDMI2USB*"
 # Number the devices
 # All HDMI2USB devices
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST!="/dev/hdmi2usb/boards/all0", \
+	TEST!="/dev/hdmi2usb/by-num/all0", \
 	ENV{NUM_HDMI2USB}:="0"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST!="/dev/hdmi2usb/boards/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST!="/dev/hdmi2usb/by-num/all1", \
 	ENV{NUM_HDMI2USB}:="1"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST!="/dev/hdmi2usb/boards/all2", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST!="/dev/hdmi2usb/by-num/all2", \
 	ENV{NUM_HDMI2USB}:="2"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST=="/dev/hdmi2usb/boards/all2", \
-	TEST!="/dev/hdmi2usb/boards/all3", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all2", \
+	TEST!="/dev/hdmi2usb/by-num/all3", \
 	ENV{NUM_HDMI2USB}:="3"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/all0", \
-	TEST=="/dev/hdmi2usb/boards/all1", \
-	TEST=="/dev/hdmi2usb/boards/all2", \
-	TEST=="/dev/hdmi2usb/boards/all3", \
-	TEST!="/dev/hdmi2usb/boards/all4", \
+	TEST=="/dev/hdmi2usb/by-num/all0", \
+	TEST=="/dev/hdmi2usb/by-num/all1", \
+	TEST=="/dev/hdmi2usb/by-num/all2", \
+	TEST=="/dev/hdmi2usb/by-num/all3", \
+	TEST!="/dev/hdmi2usb/by-num/all4", \
 	ENV{NUM_HDMI2USB}:="4"
 
 # HDMI2USB boards
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
 	ENV{NUM_HDMI2USB_BOARD}:="0"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
 	ENV{NUM_HDMI2USB_BOARD}:="1"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
 	ENV{NUM_HDMI2USB_BOARD}:="2"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}3", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}3", \
 	ENV{NUM_HDMI2USB_BOARD}:="3"
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}0", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}1", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}2", \
-	TEST=="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}3", \
-	TEST!="/dev/hdmi2usb/boards/$env{ID_HDMI2USB_BOARD}4", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}0", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}1", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}2", \
+	TEST=="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}3", \
+	TEST!="/dev/hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}4", \
 	ENV{NUM_HDMI2USB_BOARD}:="4"
 
 
@@ -70,40 +70,66 @@ SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}!="" \
 SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/usbdev"
 
-SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="", \
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="" \
 	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/usbdev"
 
-SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="", \
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="" \
 	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/usbdev"
 
 # Serial control console
-SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_TTY}!="", ENV{ID_SERIAL_SHORT}!="" \
-	SYMLINK+="hdmi2usb/by-serial/$env{ID_SERIAL_SHORT}/tty$env{ID_HDMI2USB_TTY}"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
+	TEST!="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty0", \
+	ENV{NUM_HDMI2USB_TTY}:="0"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty0", \
+	TEST!="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty1", \
+	ENV{NUM_HDMI2USB_TTY}:="1"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty0", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty1", \
+	TEST!="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty2", \
+	ENV{NUM_HDMI2USB_TTY}:="2"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty0", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty1", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty2", \
+	TEST!="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty3", \
+	ENV{NUM_HDMI2USB_TTY}:="3"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ACTION}=="add", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty0", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty1", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty2", \
+	TEST=="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty3", \
+	TEST!="/dev/hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty4", \
+	ENV{NUM_HDMI2USB_TTY}:="4"
 
-SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_TTY}!="", ENV{ID_PATH}!="" \
-	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH}/tty$env{ID_HDMI2USB_TTY}"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{ID_SERIAL_SHORT}!="" \
+	SYMLINK+="hdmi2usb/by-serial/$env{ID_SERIAL_SHORT}/tty$env{NUM_HDMI2USB_TTY}"
 
-SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_TTY}!="", ENV{ID_PATH_HUMAN}!="" \
-	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/tty$env{ID_HDMI2USB_TTY}"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{ID_PATH}!="" \
+	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH}/tty$env{NUM_HDMI2USB_TTY}"
 
-SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_TTY}!="", ENV{NUM_HDMI2USB}!="" \
-	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty$env{ID_HDMI2USB_TTY}"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{ID_PATH_HUMAN}!="" \
+	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/tty$env{NUM_HDMI2USB_TTY}"
 
-SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_TTY}!="", ENV{NUM_HDMI2USB_BOARD}!="", ENV{ID_HDMI2USB_TTY}!="" \
-	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/tty$env{ID_HDMI2USB_TTY}"
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{NUM_HDMI2USB}!="" \
+	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/tty$env{NUM_HDMI2USB_TTY}"
+
+SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{NUM_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_TTY}!="" \
+	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/tty$env{NUM_HDMI2USB_TTY}"
 
 # Video capture device
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_SERIAL_SHORT}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_SERIAL_SHORT}!="" \
 	SYMLINK+="hdmi2usb/by-serial/$env{ID_SERIAL_SHORT}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="" \
 	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}=="?*", ENV{NUM_HDMI2USB_BOARD} \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="" \
 	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/video"

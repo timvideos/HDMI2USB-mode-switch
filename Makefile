@@ -53,7 +53,7 @@ clean-unbind-helper:
 
 # udev rules
 install-udev:
-	cd udev; make install
+	cd udev; make install; make reload
 
 check-udev:
 	cd udev; make check
