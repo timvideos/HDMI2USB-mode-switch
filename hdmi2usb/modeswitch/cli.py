@@ -282,10 +282,10 @@ def main():
             args.mode = 'jtag'
 
         # FIXME: Hack to work around issue on the FX2.
-        #if args.mode == 'jtag' and board.type == 'opsis':
-        #    board = switch_mode(args, board, 'serial')
-        #    board = switch_mode(args, board, 'jtag')
-        #    board = switch_mode(args, board, 'serial')
+        # if args.mode == 'jtag' and board.type == 'opsis':
+        #     board = switch_mode(args, board, 'serial')
+        #     board = switch_mode(args, board, 'jtag')
+        #     board = switch_mode(args, board, 'serial')
 
         if args.mode:
             # Switch modes

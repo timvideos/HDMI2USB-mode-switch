@@ -223,7 +223,7 @@ def _openocd_script(board, script, verbose=False):
         found = re.search(err, output)
         if not found:
             continue
-        errors_found.add("- "+found.group(0))
+        errors_found.add("- " + found.group(0))
     if errors_found:
         raise OpenOCDError(
             "Found following errors in output;\n" +
