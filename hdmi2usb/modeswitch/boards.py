@@ -200,8 +200,8 @@ def _openocd_script(board, script, verbose=False):
 
     if p.returncode != 0:
         raise OpenOCDError(
-            "Returned {}".format(p.retcode),
-            p.retcode,
+            "Returned {}".format(p.returncode),
+            p.returncode,
             cmdline,
             output)
 
