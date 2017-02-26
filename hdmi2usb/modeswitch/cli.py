@@ -269,6 +269,7 @@ def main():
     if args.verbose:
         sys.stderr.write("My root dir: %s\n" % MYDIR)
 
+    # The mode-switch commands will switch modes automatically.
     if mode == 'mode-switch':
         assert len(found_boards) == 1
         board = found_boards[0]
@@ -280,10 +281,18 @@ def main():
                               args.clear_lm32_firmware):
             args.mode = 'jtag'
 
-        # Switch modes
+        # FIXME: Hack to work around issue on the FX2.
+        #if args.mode == 'jtag' and board.type == 'opsis':
+        #    board = switch_mode(args, board, 'serial')
+        #    board = switch_mode(args, board, 'jtag')
+        #    board = switch_mode(args, board, 'serial')
+
         if args.mode:
+            # Switch modes
             board = switch_mode(args, board, args.mode)
 
+    found_boards = find_boards(args)
+    for board in found_boards:
         # Load firmware onto the fx2
         if args.load_fx2_firmware:
             boards.load_fx2(
@@ -323,7 +332,7 @@ def main():
             boards.flash_lm32_firmware(
                 board, filename=None, verbose=args.verbose)
 
-        found_boards = find_boards(args)
+    found_boards = find_boards(args)
 
     for board in found_boards:
         if not (args.get_usbfs or
