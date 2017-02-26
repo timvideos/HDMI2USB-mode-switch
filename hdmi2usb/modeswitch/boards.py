@@ -15,6 +15,7 @@ import os.path
 import sys
 import time
 import subprocess
+import re
 
 from collections import namedtuple
 
@@ -145,7 +146,7 @@ def flash_fx2(board, filename, verbose=False):
 class OpenOCDError(subprocess.CalledProcessError):
     def __init__(self, msg, returncode, cmd, output):
         subprocess.CalledProcessError.__init__(
-            returncode, cmd, output)
+            self, returncode, cmd, output)
         self.message = """\
 OpenOCD run failure: {msg}.
 
@@ -159,6 +160,9 @@ OpenOCD output:
 {output}
 -----
 """.format(msg=msg, returncode=returncode, cmd=cmd, output=output)
+
+    def __str__(self):
+        return self.message
 
 
 def _openocd_script(board, script, verbose=False):
@@ -204,16 +208,24 @@ def _openocd_script(board, script, verbose=False):
     # Look for common errors in the OpenOCD output
     error_strings = [
         # DNA Failed to read correctly if this error is seen.
-        "DNA = 110000001100000011000000110000001100000011000000110000001 (0x181818181818181)",  # noqa
+        "DNA = [01]+ \\(0x18181818.*\\)",
 
         # JTAG Errors
+        "Info : TAP xc6s.tap does not have IDCODE",
         "Warn : Bypassing JTAG setup events due to errors",
         "Error: Trying to use configured scan chain anyway...",
     ]
+
+    errors_found = set()
     for err in error_strings:
-        if err not in output:
+        found = re.search(err, output)
+        if not found:
             continue
-        raise OpenOCDError(err, p.returncode, cmdline, output)
+        errors_found.add("- "+found.group(0))
+    if errors_found:
+        raise OpenOCDError(
+            "Found following errors in output;\n" +
+            "\n".join(errors_found), p.returncode, cmdline, output)
 
 
 def _openocd_flash(board, filepath, location, verbose=False):
