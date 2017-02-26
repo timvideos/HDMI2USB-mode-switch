@@ -119,17 +119,17 @@ SUBSYSTEM=="tty", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB_TTY}!="", ENV{NUM_HDMI
 	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/tty$env{NUM_HDMI2USB_TTY}"
 
 # Video capture device
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_SERIAL_SHORT}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_SERIAL_SHORT}!="" \
 	SYMLINK+="hdmi2usb/by-serial/$env{ID_SERIAL_SHORT}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_PATH_HUMAN}!="" \
 	SYMLINK+="hdmi2usb/by-path/$env{ID_PATH_HUMAN}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}=="?*" \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{NUM_HDMI2USB}!="" \
 	SYMLINK+="hdmi2usb/by-num/all$env{NUM_HDMI2USB}/video"
 
-SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}=="?*", ENV{NUM_HDMI2USB_BOARD} \
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USB}=="1", ENV{ID_HDMI2USB_BOARD}!="", ENV{NUM_HDMI2USB_BOARD}!="" \
 	SYMLINK+="hdmi2usb/by-num/$env{ID_HDMI2USB_BOARD}$env{NUM_HDMI2USB_BOARD}/video"
