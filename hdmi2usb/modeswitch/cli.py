@@ -110,6 +110,10 @@ Do operation on all boards, otherwise will error if multiple boards are found.
     parser.add_argument(
         '--flash-gateware',
         help='Flash gateware onto the SPI flash which the FPGA boots from.')
+    parser.add_argument(
+        '--reset-gateware',
+        action='store_true',
+        help='Reset gateware currently running on the FPGA.')
     # Cypress FX2
     parser.add_argument(
         '--load-fx2-firmware',
@@ -177,6 +181,64 @@ def find_boards(args):
     return filtered_boards
 
 
+def switch_mode(args, board, newmode):
+    if newmode == "jtag":
+        # Works on all boards
+        pass
+
+    elif newmode in ("serial", "eeprom"):
+        assert board.type == "opsis", (
+            "{} mode only valid on the opsis.".format(newmode))
+
+    elif newmode == "operational":
+        raise NotImplemented("Not yet finished...")
+    else:
+        raise NotImplemented("Unknown mode {}".format(newmode))
+
+    if board.state != newmode:
+        if args.verbose:
+            sys.stderr.write(
+                "Going from {} to {}\n".format(board.state, newmode))
+
+        old_board = board
+        boards.load_fx2(
+            old_board, mode=newmode, verbose=args.verbose)
+
+        starttime = time.time()
+        while True:
+            found_boards = find_boards(args)
+
+            found_board = None
+            for new_board in found_boards:
+                if new_board.type == old_board.type:
+                    if new_board.state == old_board.state:
+                        continue
+                    assert new_board.state == newmode
+                    found_board = new_board
+                    break
+            else:
+                time.sleep(1)
+
+            if found_board:
+                board = found_board
+                break
+
+            if (args.timeout and starttime -
+                    time.time() > args.timeout):
+                raise SystemError("Timeout!")
+
+        if args.verbose:
+            sys.stderr.write("Board was {!r}\n".format(old_board))
+            sys.stderr.write("Board now {!r}\n".format(board))
+    else:
+        if args.verbose:
+            sys.stderr.write(
+                "Board already in required mode ({!s})\n".format(
+                    board.state))
+
+    return board
+
+
 def main():
     # Parse the command line name
     cmd = os.path.basename(sys.argv[0])
@@ -207,106 +269,70 @@ def main():
     if args.verbose:
         sys.stderr.write("My root dir: %s\n" % MYDIR)
 
+    # The mode-switch commands will switch modes automatically.
     if mode == 'mode-switch':
         assert len(found_boards) == 1
-        for board in found_boards:
-            if not args.mode and (args.load_gateware or
-                                  args.flash_gateware or
-                                  args.flash_lm32_firmware or
-                                  args.clear_lm32_firmware):
-                args.mode = 'jtag'
+        board = found_boards[0]
 
+        if not args.mode and (args.load_gateware or
+                              args.flash_gateware or
+                              args.reset_gateware or
+                              args.flash_lm32_firmware or
+                              args.clear_lm32_firmware):
+            args.mode = 'jtag'
+
+        # FIXME: Hack to work around issue on the FX2.
+        # if args.mode == 'jtag' and board.type == 'opsis':
+        #     board = switch_mode(args, board, 'serial')
+        #     board = switch_mode(args, board, 'jtag')
+        #     board = switch_mode(args, board, 'serial')
+
+        if args.mode:
             # Switch modes
-            if args.mode:
-                newmode = args.mode
-                if newmode == "jtag":
-                    # Works on all boards
-                    pass
+            board = switch_mode(args, board, args.mode)
 
-                elif newmode in ("serial", "eeprom"):
-                    assert board.type == "opsis", (
-                        "{} mode only valid on the opsis.".format(newmode))
+    found_boards = find_boards(args)
+    for board in found_boards:
+        # Load firmware onto the fx2
+        if args.load_fx2_firmware:
+            boards.load_fx2(
+                board, filename=args.load_fx2_firmware,
+                verbose=args.verbose)
 
-                elif newmode == "operational":
-                    raise NotImplemented("Not yet finished...")
-                else:
-                    raise NotImplemented("Unknown mode {}".format(newmode))
+        # Load gateware onto the FPGA
+        elif args.load_gateware:
+            boards.load_gateware(
+                board, args.load_gateware, verbose=args.verbose)
 
-                if board.state != newmode:
-                    if args.verbose:
-                        sys.stderr.write("Going from %s to %s\n" %
-                                         (board.state, newmode))
+        # Flash the gateware into the SPI flash on the board.
+        elif args.flash_gateware:
+            boards.flash_gateware(
+                board, args.flash_gateware, verbose=args.verbose)
 
-                    old_board = board
-                    boards.load_fx2(old_board, mode=newmode,
-                                    verbose=args.verbose)
+        # Reset the gateware running on the board.
+        elif args.reset_gateware:
+            boards.reset_gateware(
+                board, verbose=args.verbose)
 
-                    starttime = time.time()
-                    while True:
-                        found_boards = find_boards(args)
+        # Load firmware onto the lm32
+        elif args.load_lm32_firmware:
+            if board.type == "opsis":
+                assert board.state == "serial"
+            assert board.tty
+            print("flterm something....")
+            raise NotImplemented("Not yet finished...")
 
-                        found_board = None
-                        for new_board in found_boards:
-                            if new_board.type == old_board.type:
-                                if new_board.state == old_board.state:
-                                    continue
-                                assert new_board.state == newmode
-                                found_board = new_board
-                                break
-                        else:
-                            time.sleep(1)
+        # Flash the firmware into the SPI flash on the board.
+        elif args.flash_lm32_firmware:
+            boards.flash_lm32_firmware(
+                board, args.flash_lm32_firmware, verbose=args.verbose)
 
-                        if found_board:
-                            board = found_board
-                            break
+        # Clear the firmware into the SPI flash on the board.
+        elif args.clear_lm32_firmware:
+            boards.flash_lm32_firmware(
+                board, filename=None, verbose=args.verbose)
 
-                        if (args.timeout and starttime -
-                                time.time() > args.timeout):
-                            raise SystemError("Timeout!")
-
-                    if args.verbose:
-                        sys.stderr.write("Board was %r\n" % (old_board,))
-                        sys.stderr.write("Board now %r\n" % (board,))
-                else:
-                    if args.verbose:
-                        sys.stderr.write(
-                            "Board already in required mode (%s)\n" %
-                            (board.state,))
-
-            # Load firmware onto the fx2
-            if args.load_fx2_firmware:
-                boards.load_fx2(board, filename=args.load_fx2_firmware,
-                                verbose=args.verbose)
-
-            # Load gateware onto the FPGA
-            elif args.load_gateware:
-                boards.load_gateware(board, args.load_gateware,
-                                     verbose=args.verbose)
-
-            # Flash the gateware into the SPI flash on the board.
-            elif args.flash_gateware:
-                boards.flash_gateware(board, args.flash_gateware,
-                                      verbose=args.verbose)
-
-            # Load firmware onto the lm32
-            elif args.load_lm32_firmware:
-                if board.type == "opsis":
-                    assert board.state == "serial"
-                assert board.tty
-                print("flterm something....")
-                raise NotImplemented("Not yet finished...")
-
-            # Flash the firmware into the SPI flash on the board.
-            elif args.flash_lm32_firmware:
-                boards.flash_lm32_firmware(board, args.flash_lm32_firmware,
-                                           verbose=args.verbose)
-
-            # Clear the firmware into the SPI flash on the board.
-            elif args.clear_lm32_firmware:
-                boards.flash_lm32_firmware(board, filename=None,
-                                           verbose=args.verbose)
-
-        found_boards = find_boards(args)
+    found_boards = find_boards(args)
 
     for board in found_boards:
         if not (args.get_usbfs or

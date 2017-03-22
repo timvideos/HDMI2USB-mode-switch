@@ -15,6 +15,7 @@ import os.path
 import sys
 import time
 import subprocess
+import re
 
 from collections import namedtuple
 
@@ -126,8 +127,10 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
     env['PATH'] = env['PATH'] + ':/usr/sbin:/sbin'
 
     try:
-        output = subprocess.check_output(cmdline, stderr=subprocess.STDOUT,
-                                         env=env)
+        output = subprocess.check_output(
+            cmdline, stderr=subprocess.STDOUT, env=env)
+        if verbose > 2:
+            sys.stderr.write(output.decode('utf-8'))
     except subprocess.CalledProcessError as e:
         if b"can't modify CPUCS: Protocol error\n" not in e.output:
             print(e.output)
@@ -142,57 +145,98 @@ def flash_fx2(board, filename, verbose=False):
         "Only support flashing the Opsis for now (not %s)." % board.type)
 
 
-def load_gateware(board, filename, verbose=False):
+class OpenOCDError(subprocess.CalledProcessError):
+    def __init__(self, msg, returncode, cmd, output):
+        subprocess.CalledProcessError.__init__(
+            self, returncode, cmd, output)
+        self.message = """\
+OpenOCD run failure: {msg}.
+
+OpenOCD command line resulted in {returncode}
+-----
+{cmd}
+-----
+
+OpenOCD output:
+-----
+{output}
+-----
+""".format(msg=msg, returncode=returncode, cmd=cmd, output=output)
+
+    def __str__(self):
+        return self.message
+
+
+def _openocd_script(board, script, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
-
-    filepath = firmware_path(filename)
-    assert os.path.exists(filepath), filepath
-    assert filename.endswith(".bit"), "Loading requires a .bit file"
-    xfile = files.XilinxBitFile(filepath)
-    assert xfile.part == BOARD_FPGA[board.type], (
-        "Bit file must be for {} (not {})".format(
-            BOARD_FPGA[board.type], xfile.part))
-
-    script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
-    script += ["pld load 0 {}".format(filepath)]
-    script += ["exit"]
+    if verbose > 1:
+        sys.stderr.write(
+            "Using OpenOCD script:\n{}\n".format(";\n".join(script)))
 
     cmdline = ["openocd"]
     cmdline += ["-f", OPENOCD_MAPPING[board.type]]
     cmdline += ["-c", "; ".join(script)]
+    if verbose > 1:
+        cmdline += ["--debug={}".format(verbose - 2)]
 
-    if verbose == 0:
-        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
-    else:
-        if verbose > 1:
-            cmdline += ["--debug={}".format(verbose - 2)]
+    if verbose:
         sys.stderr.write("Running %r\n" % cmdline)
-        subprocess.check_call(cmdline)
+
+    p = subprocess.Popen(
+        cmdline,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+    if not verbose:
+        output, _ = p.communicate()
+        output = output.decode('utf-8')
+    else:
+        output = []
+        while True:
+            output.append(p.stdout.readline().decode('utf-8'))
+            sys.stdout.write(output[-1])
+            if p.poll() is not None:
+                break
+        output = "".join(output)
+
+    if p.returncode != 0:
+        raise OpenOCDError(
+            "Returned {}".format(p.returncode),
+            p.returncode,
+            cmdline,
+            output)
+
+    # Look for common errors in the OpenOCD output
+    error_strings = [
+        # DNA Failed to read correctly if this error is seen.
+        "DNA = [01]+ \\(0x18181818.*\\)",
+
+        # JTAG Errors
+        "Info : TAP xc6s.tap does not have IDCODE",
+        "Warn : Bypassing JTAG setup events due to errors",
+        "Error: Trying to use configured scan chain anyway...",
+    ]
+
+    errors_found = set()
+    for err in error_strings:
+        found = re.search(err, output)
+        if not found:
+            continue
+        errors_found.add("- " + found.group(0))
+    if errors_found:
+        raise OpenOCDError(
+            "Found following errors in output;\n" +
+            "\n".join(errors_found), p.returncode, cmdline, output)
 
 
-def flash_gateware(board, filename, verbose=False):
-    assert board.state == "jtag", board
-    assert not board.dev.inuse()
-    assert board.type in OPENOCD_MAPPING
-
-    filepath = firmware_path(filename)
-    assert os.path.exists(filepath), filepath
-    assert filename.endswith(".bin"), "Flashing requires a .bin file"
-    xfile = files.XilinxBinFile(filepath)
-
+def _openocd_flash(board, filepath, location, verbose=False):
     assert board.type in OPENOCD_FLASHPROXY
     proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
     assert os.path.exists(proxypath), proxypath
 
     script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
+    script += ["xc6s_print_dna xc6s.tap"]
     script += ["jtagspi_init 0 {}".format(proxypath)]
 
     if verbose > 1:
@@ -204,22 +248,47 @@ def flash_gateware(board, filename, verbose=False):
     # script += ["flash read_bank 0 backup.bit 0 0x01000000"]
 
     script += [
-        "jtagspi_program {} 0x{:x}".format(filepath, 0),
+        "jtagspi_program {} 0x{:x}".format(filepath, location),
         "exit"
     ]
 
-    cmdline = ["openocd"]
+    return _openocd_script(board, script, verbose=verbose)
 
-    cmdline += ["-f", OPENOCD_MAPPING[board.type]]
-    cmdline += ["-c", "; ".join(script)]
 
-    if verbose == 0:
-        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
-    else:
-        if verbose > 1:
-            cmdline += ["--debug={}".format(verbose - 2)]
-        sys.stderr.write("Running %r\n" % cmdline)
-        subprocess.check_call(cmdline)
+def reset_gateware(board, verbose=False):
+    script = ["init"]
+    script += ["xc6s_print_dna xc6s.tap"]
+    script += ["reset halt"]
+    script += ["exit"]
+
+    return _openocd_script(board, script, verbose=verbose)
+
+
+def load_gateware(board, filename, verbose=False):
+    filepath = firmware_path(filename)
+    assert os.path.exists(filepath), filepath
+    assert filename.endswith(".bit"), "Loading requires a .bit file"
+    xfile = files.XilinxBitFile(filepath)
+    assert xfile.part == BOARD_FPGA[board.type], (
+        "Bit file must be for {} (not {})".format(
+            BOARD_FPGA[board.type], xfile.part))
+
+    script = ["init"]
+    script += ["xc6s_print_dna xc6s.tap"]
+    script += ["pld load 0 {}".format(filepath)]
+    script += ["reset halt"]
+    script += ["exit"]
+
+    return _openocd_script(board, script, verbose=verbose)
+
+
+def flash_gateware(board, filename, verbose=False):
+    filepath = firmware_path(filename)
+    assert os.path.exists(filepath), filepath
+    assert filename.endswith(".bin"), "Flashing requires a .bin file"
+    xfile = files.XilinxBinFile(filepath)
+
+    _openocd_flash(board, filepath, 0, verbose=verbose)
 
 
 def flash_lm32_firmware(board, filename, verbose=False):
@@ -235,40 +304,7 @@ def flash_lm32_firmware(board, filename, verbose=False):
     else:
         filepath = firmware_path("zero.bin")
 
-    assert board.type in OPENOCD_FLASHPROXY
-    proxypath = os.path.abspath(OPENOCD_FLASHPROXY[board.type])
-    assert os.path.exists(proxypath), proxypath
-
-    script = ["init"]
-    if verbose:
-        script += ["xc6s_print_dna xc6s.tap"]
-
-    script += ["jtagspi_init 0 {}".format(proxypath)]
-
-    if verbose > 1:
-        script += ["flash banks"]
-        script += ["flash list"]
-    if verbose > 2:
-        script += ["flash info 0"]
-
-    # FIXME: This is hard coded...
-    script += [
-        "jtagspi_program {} 0x{:x}".format(filepath, 0x200000),
-        "exit"
-    ]
-
-    cmdline = ["openocd"]
-
-    cmdline += ["-f", OPENOCD_MAPPING[board.type]]
-    cmdline += ["-c", "; ".join(script)]
-
-    if verbose == 0:
-        subprocess.check_output(cmdline, stderr=subprocess.STDOUT)
-    else:
-        if verbose > 1:
-            cmdline += ["--debug={}".format(verbose - 2)]
-        sys.stderr.write("Running %r\n" % cmdline)
-        subprocess.check_call(cmdline)
+    _openocd_flash(board, filepath, 0x200000, verbose=verbose)
 
 
 def find_boards(prefer_hardware_serial=True, verbose=False):
