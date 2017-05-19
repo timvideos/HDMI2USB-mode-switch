@@ -12,4 +12,12 @@ Make sure you install the [udev rules inside the udev directory](./udev).
 
 Before sending a pull request, make sure `make test` and `make check` pass.
 
-FIXME: Add more instructions
+There are three ways to run `hdmi2usb-mode-switch`:
+
+ 1. As root
+ 1. Install the
+ [unbind-helper](https://github.com/timvideos/HDMI2USB-mode-switch/blob/master/unbind-helper.c)
+ as a setuid binary
+ 1. Install the
+ [udev-rules](https://github.com/timvideos/HDMI2USB-mode-switch/tree/master/udev)
+ which sets the permissions of the unbind to the `video` group.
