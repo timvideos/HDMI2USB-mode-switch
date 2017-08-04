@@ -67,12 +67,12 @@ BOARD_FPGA = {
     'opsis': "6slx45tfgg484",
 }
 BOARD_FLASH_MAP = {
-    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/atlys/base.py#L205-L215
-    'atlys':   {'gateware':0x0, 'bios':0x00200000, 'firmware':0x00208000},
-    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/opsis/base.py#L256-L266
-    'opsis':   {'gateware':0x0, 'bios':0x00200000, 'firmware':0x00208000},
-    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/mimasv2/base.py#L208-L220
-    'mimasv2': {'gateware':0x0, 'bios':0x00080000, 'firmware':0x00088000},
+    # https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/atlys/base.py#L205-L215
+    'atlys': {'gateware': 0x0, 'bios': 0x00200000, 'firmware': 0x00208000},
+    # https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/opsis/base.py#L256-L266
+    'opsis': {'gateware': 0x0, 'bios': 0x00200000, 'firmware': 0x00208000},
+    # https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/mimasv2/base.py#L208-L220
+    'mimasv2': {'gateware': 0x0, 'bios': 0x00080000, 'firmware': 0x00088000},
 }
 
 USBJTAG_MAPPING = {
