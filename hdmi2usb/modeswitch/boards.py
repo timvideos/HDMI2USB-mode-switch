@@ -66,6 +66,14 @@ BOARD_FPGA = {
     'atlys': "6slx45csg324",
     'opsis': "6slx45tfgg484",
 }
+BOARD_FLASH_MAP = {
+    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/atlys/base.py#L205-L215
+    'atlys':   {'gateware':0x0, 'bios':0x00200000, 'firmware':0x00208000},
+    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/opsis/base.py#L256-L266
+    'opsis':   {'gateware':0x0, 'bios':0x00200000, 'firmware':0x00208000},
+    # Keep in sync with https://github.com/timvideos/HDMI2USB-litex-firmware/blob/master/targets/mimasv2/base.py#L208-L220
+    'mimasv2': {'gateware':0x0, 'bios':0x00080000, 'firmware':0x00088000},
+}
 
 USBJTAG_MAPPING = {
     'hw_nexys': 'atlys',
@@ -288,7 +296,11 @@ def flash_gateware(board, filename, verbose=False):
     assert filename.endswith(".bin"), "Flashing requires a .bin file"
     xfile = files.XilinxBinFile(filepath)
 
-    _openocd_flash(board, filepath, 0, verbose=verbose)
+    _openocd_flash(
+        board,
+        filepath,
+        BOARD_FLASH_MAP[board.type]['gateware'],
+        verbose=verbose)
 
 
 def flash_lm32_firmware(board, filename, verbose=False):
@@ -304,7 +316,11 @@ def flash_lm32_firmware(board, filename, verbose=False):
     else:
         filepath = firmware_path("zero.bin")
 
-    _openocd_flash(board, filepath, 0x200000, verbose=verbose)
+    _openocd_flash(
+        board,
+        filepath,
+        BOARD_FLASH_MAP[board.type]['firmware'],
+        verbose=verbose)
 
 
 def find_boards(prefer_hardware_serial=True, verbose=False):
