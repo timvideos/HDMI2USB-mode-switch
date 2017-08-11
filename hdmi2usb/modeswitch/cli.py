@@ -103,6 +103,10 @@ Do operation on all boards, otherwise will error if multiple boards are found.
         '--mode',
         help='Switch mode to given state.',
         choices=boards.BOARD_STATES)
+
+    parser.add_argument(
+        '--flash-image',
+        help='Flash a combined gateware+bios+firmware onto the SPI flash.')
     # FPGA
     parser.add_argument(
         '--load-gateware',
@@ -121,22 +125,27 @@ Do operation on all boards, otherwise will error if multiple boards are found.
     parser.add_argument(
         '--flash-fx2-eeprom',
         help='Flash the FX2 eeprom with data.')
-    #
+    # SoftCPU inside the FPGA gateware
     parser.add_argument(
-        '--load-lm32-firmware',
+        '--flash-softcpu-bios',
         help="""\
-Load firmware file onto the lm32 Soft-Core running inside the FPGA.
+Flash the bios file for the Soft-CPU onto the SPI flash.
 """)
     parser.add_argument(
-        '--flash-lm32-firmware',
+        '--load-softcpu-firmware',
         help="""\
-Flash the firmware file for the lm32 Soft-Core onto the SPI flash.
+Load firmware file onto the Soft-CPU running inside the FPGA.
 """)
     parser.add_argument(
-        '--clear-lm32-firmware',
+        '--flash-softcpu-firmware',
+        help="""\
+Flash the firmware file for the Soft-CPU onto the SPI flash.
+""")
+    parser.add_argument(
+        '--clear-softcpu-firmware',
         action='store_true',
         help="""\
-Clear the firmware file for the lm32 Soft-Core on the SPI flash.
+Clear the firmware file for the Soft-CPU on the SPI flash.
 """)
 
     parser.add_argument(
@@ -277,8 +286,9 @@ def main():
         if not args.mode and (args.load_gateware or
                               args.flash_gateware or
                               args.reset_gateware or
-                              args.flash_lm32_firmware or
-                              args.clear_lm32_firmware):
+                              args.flash_softcpu_bios or
+                              args.flash_softcpu_firmware or
+                              args.clear_softcpu_firmware):
             args.mode = 'jtag'
 
         # FIXME: Hack to work around issue on the FX2.
@@ -314,8 +324,13 @@ def main():
             boards.reset_gateware(
                 board, verbose=args.verbose)
 
-        # Load firmware onto the lm32
-        elif args.load_lm32_firmware:
+        # Flash the gateware into the SPI flash on the board.
+        elif args.flash_softcpu_bios:
+            boards.flash_bios(
+                board, args.flash_softcpu_bios, verbose=args.verbose)
+
+        # Load firmware onto the SoftCPU inside the FPGA
+        elif args.load_softcpu_firmware:
             if board.type == "opsis":
                 assert board.state == "serial"
             assert board.tty
@@ -323,13 +338,13 @@ def main():
             raise NotImplemented("Not yet finished...")
 
         # Flash the firmware into the SPI flash on the board.
-        elif args.flash_lm32_firmware:
-            boards.flash_lm32_firmware(
-                board, args.flash_lm32_firmware, verbose=args.verbose)
+        elif args.flash_softcpu_firmware:
+            boards.flash_firmware(
+                board, args.flash_softcpu_firmware, verbose=args.verbose)
 
         # Clear the firmware into the SPI flash on the board.
-        elif args.clear_lm32_firmware:
-            boards.flash_lm32_firmware(
+        elif args.clear_softcpu_firmware:
+            boards.flash_firmware(
                 board, filename=None, verbose=args.verbose)
 
     found_boards = find_boards(args)
