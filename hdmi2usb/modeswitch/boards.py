@@ -293,7 +293,7 @@ def load_gateware(board, filename, verbose=False):
 def flash_gateware(board, filename, verbose=False):
     filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
-    assert filename.endswith(".bin"), "Flashing requires a .bin file"
+    assert filename.endswith(".bin"), "Flashing requires a Xilinx .bin file"
     xfile = files.XilinxBinFile(filepath)
 
     _openocd_flash(
@@ -303,7 +303,20 @@ def flash_gateware(board, filename, verbose=False):
         verbose=verbose)
 
 
-def flash_lm32_firmware(board, filename, verbose=False):
+def flash_bios(board, filename, verbose=False):
+    filepath = firmware_path(filename)
+    assert os.path.exists(filepath), filepath
+    assert filename.endswith(".bin"), "Flashing requires a .bin file"
+    # FIXME: Bios files have the CRC at the end, should check that here.
+
+    _openocd_flash(
+        board,
+        filepath,
+        BOARD_FLASH_MAP[board.type]['bios'],
+        verbose=verbose)
+
+
+def flash_firmware(board, filename, verbose=False):
     assert board.state == "jtag", board
     assert not board.dev.inuse()
     assert board.type in OPENOCD_MAPPING
@@ -321,6 +334,9 @@ def flash_lm32_firmware(board, filename, verbose=False):
         filepath,
         BOARD_FLASH_MAP[board.type]['firmware'],
         verbose=verbose)
+
+
+flash_image = flash_gateware
 
 
 def find_boards(prefer_hardware_serial=True, verbose=False):
