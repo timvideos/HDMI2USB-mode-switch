@@ -147,6 +147,17 @@ Flash the firmware file for the Soft-CPU onto the SPI flash.
         help="""\
 Clear the firmware file for the Soft-CPU on the SPI flash.
 """)
+    # Create aliases for old lm32 name of the softcpu.
+    for action in list(parser._actions):
+        aliases = set()
+        for option in action.option_strings:
+            if 'softcpu' in option:
+                aliases.add(option.replace('softcpu', 'lm32'))
+        if aliases:
+            parser.add_argument(
+                *aliases,
+                dest=action.dest,
+                help=argparse.SUPPRESS)
 
     parser.add_argument(
         '--timeout',
