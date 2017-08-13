@@ -288,7 +288,8 @@ def main():
                               args.reset_gateware or
                               args.flash_softcpu_bios or
                               args.flash_softcpu_firmware or
-                              args.clear_softcpu_firmware):
+                              args.clear_softcpu_firmware or
+                              args.flash_image):
             args.mode = 'jtag'
 
         # FIXME: Hack to work around issue on the FX2.
@@ -346,6 +347,12 @@ def main():
         elif args.clear_softcpu_firmware:
             boards.flash_firmware(
                 board, filename=None, verbose=args.verbose)
+
+        # Flash an image with gateware+bios+firmware into the SPI flash on the
+        # board.
+        elif args.flash_image:
+            boards.flash_image(
+                board, args.flash_image, verbose=args.verbose)
 
     found_boards = find_boards(args)
 

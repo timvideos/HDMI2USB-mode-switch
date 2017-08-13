@@ -336,6 +336,9 @@ def flash_firmware(board, filename, verbose=False):
         verbose=verbose)
 
 
+flash_image = flash_gateware
+
+
 def find_boards(prefer_hardware_serial=True, verbose=False):
     all_boards = []
     exart_uarts = []
