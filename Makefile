@@ -23,6 +23,8 @@ clean-conda:
 	rm -rf Miniconda3-latest-Linux-x86_64.sh
 	rm -rf conda
 
+.PHONY: conda check-conda clean-conda
+
 # pypi upload
 test-upload:
 	python3 setup.py register -r pypitest
@@ -31,6 +33,8 @@ test-upload:
 upload:
 	python3 setup.py register -r pypi
 	python3 setup.py sdist upload -r pypi
+
+.PHONY: test-upload upload
 
 # Unbind helper - needs to be setuid
 bin/unbind-helper:
@@ -50,6 +54,8 @@ check-unbind-helper:
 
 clean-unbind-helper:
 	if [ -e bin/unbind-helper ]; then sudo rm bin/unbind-helper; fi
+
+.PHONY: unbind-helper check-unbind-helper clean-unbind-helper
 
 # udev rules
 install-udev:
@@ -99,6 +105,9 @@ clean:
 	make clean-unbind-helper
 	git clean -d -x -f
 
+install-deps:
+	apt-get install posh
+
 setup:
 	if ! make check-conda; then \
 		make -s conda; \
@@ -109,6 +118,13 @@ setup:
 	if ! make check-udev; then \
 		make -s install-udev; \
 	fi
+	@make --quiet config
+
+config:
+	@echo ""
+	@echo "Set your path with;"
+	@echo " export PATH=$(PWD)/bin:$(PWD)/conda/bin:\$$PATH"
+	@echo ""
 
 all:
 	@echo "Checking setup...."
@@ -123,6 +139,7 @@ all:
 	@echo "Printing version info...."
 	@make --quiet version
 	@echo
+	@make --quiet config
 
 .PHONY: bin/unbind-helper
 .DEFAULT_GOAL := all
