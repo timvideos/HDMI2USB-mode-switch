@@ -346,6 +346,7 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
         if False:
             pass
 
+        # https://github.com/timvideos/HDMI2USB/wiki/USB-IDs
         # Digilent Atlys
         # --------------------------
         # Digilent Atlys board with stock "Adept" firmware
@@ -366,11 +367,26 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
             all_boards.append(
                 Board(dev=device, type="atlys", state="jtag"))
 
-        # Digilent Atlys board JTAG/firmware upgrade mode with Openmoko ID
+        # Digilent Atlys board JTAG/firmware upgrade mode with Openmoko ID by
+        # default. Device ID 0x10 indicates test JTAG mode, 0x11 indicates test
+        # Serial, 0x12 indicates test Audio and 0x13 indicates test UVC.
         # Bus 003 Device 019: ID 1d50:60b7
         elif device.vid == 0x1d50 and device.pid == 0x60b7:
-            all_boards.append(
-                Board(dev=device, type="atlys", state="operational"))
+            if device.did == '0010':
+                all_boards.append(
+                    Board(dev=device, type="atlys", state="test-jtag"))
+            elif device.did == '0011':
+                all_boards.append(
+                    Board(dev=device, type="atlys", state="test-serial"))
+            elif device.did == '0012':
+                all_boards.append(
+                    Board(dev=device, type="atlys", state="test-audio"))
+            elif device.did == '0013':
+                all_boards.append(
+                    Board(dev=device, type="atlys", state="test-uvc"))
+            else:
+                all_boards.append(
+                    Board(dev=device, type="atlys", state="operational"))
 
         elif device.vid == 0x04e2 and device.pid == 0x1410:
             exart_uarts.append(device)
@@ -411,6 +427,15 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
             elif device.did == '0003':
                 all_boards.append(
                     Board(dev=device, type="opsis", state="serial"))
+            elif device.did == '0011':
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="test-serial"))
+            elif device.did == '0012':
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="test-audio"))
+            elif device.did == '0013':
+                all_boards.append(
+                    Board(dev=device, type="opsis", state="test-uvc"))
             else:
                 assert False, "Unknown mode: %s" % device.did
 
