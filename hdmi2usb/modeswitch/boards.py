@@ -460,8 +460,9 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
                     logging.warn("Unknown usb-jtag device! %r (%s)",
                                  device.serialno, device)
                     continue
-                all_boards.append(Board(dev=device, type=USBJTAG_MAPPING[
-                                  device.serialno], state="jtag"))
+                all_boards.append(Board(
+                    dev=device, type=USBJTAG_MAPPING[device.serialno],
+                    state="jtag"))
             elif device.did == 'ff00':
                 all_boards.append(
                     Board(dev=device, type='opsis', state="jtag"))
