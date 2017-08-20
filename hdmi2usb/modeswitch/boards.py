@@ -260,7 +260,10 @@ def _openocd_flash(board, filepath, location, verbose=False):
         "exit"
     ]
 
-    return _openocd_script(board, script, verbose=verbose)
+    try:
+        return _openocd_script(board, script, verbose=verbose)
+    finally:
+        print("After flashing, the board will need to be power cycled.")
 
 
 def reset_gateware(board, verbose=False):
