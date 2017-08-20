@@ -13,7 +13,7 @@
 | Atlys | Digilent Adept*| 0x1443    | 0x0007     | FIXME      |
 | Atlys | Unconfigured   | 0x1D50    | 0x60b5     | 0x01       |
 | Atlys | Upgrade        | 0x1D50    | 0x60b6     | 0x01       |
-| Atlys | Operational    | 0x1D50    | 0x60b6     | 0x01       |
+| Atlys | Operational    | 0x1D50    | 0x60b7     | FIXME      |
 
  *: Atlys running original shipping firmware enumerates as this.
 
