@@ -1,24 +1,43 @@
 # USB ID table
 
  * This page is published at https://github.com/timvideos/HDMI2USB/wiki/USB-IDs
- * [More information about the Opsis USB IDs can be found in the developer documentation](https://github.com/timvideos/HDMI2USB/wiki/USB-IDs/_edit).
+ * [More information about the Opsis USB IDs can be found in the developer documentation](https://opsis.hdmi2usb.tv/getting-started/usb-ids.html).
 
 ### Primary USB IDs
 
-| Board |    Mode        | Vendor ID | Product ID |
-| -----:| --------------:|:---------:|:----------:|
-| Opsis | Unconfigured   | 0x2A19    | 0x5440     |
-| Opsis | Programming    | 0x2A19    | 0x5441     |
-| Opsis | Operational    | 0x2A19    | 0x5442     |
-| Atlys | Digilent Adept*| 0x1443    | 0x0007     |
-| Atlys | Unconfigured   | 0x1D50    | 0x60b5     |
-| Atlys | Programming    | 0x1D50    | 0x60b6     |
-| Atlys | Operational    | 0x1D50    | 0x60b7     |
+| Board |    Mode        | Vendor ID | Product ID | Device ID  |
+| -----:| --------------:|:---------:|:----------:|:----------:|
+| Opsis | Unconfigured   | 0x2A19    | 0x5440     | FIXME      |
+| Opsis | Upgrade        | 0x2A19    | 0x5441     | 0x01       |
+| Opsis | Operational    | 0x2A19    | 0x5442     | FIXME      |
+| Atlys | Digilent Adept*| 0x1443    | 0x0007     | FIXME      |
+| Atlys | Unconfigured   | 0x1D50    | 0x60b5     | 0x01       |
+| Atlys | Upgrade        | 0x1D50    | 0x60b6     | 0x01       |
+| Atlys | Operational    | 0x1D50    | 0x60b7     | FIXME      |
 
  *: Atlys running original shipping firmware enumerates as this.
 
 For the Opsis, we use Numato Lab's USB ID (they are  the device's manufacture).
 For the Atlys, the [Openmoko project](http://wiki.openmoko.org/wiki/USB_Product_IDs#Assigned.2FAllocated_Openmoko_USB_Product_IDs) has provided IDs.
+
+### Developer IDs
+
+Developer modes reuse a different DeviceID on the "Upgrade" PID+VID
+
+| Board |    Mode        | Vendor ID | Product ID | Device ID  |
+| -----:| --------------:|:---------:|:----------:|:----------:|
+| Opsis | Test JTAG      | 0x2A19    | 0x5441     | 0x10       |
+| Opsis | Test Serial    | 0x2A19    | 0x5441     | 0x11       |
+| Opsis | Test Audio     | 0x2A19    | 0x5441     | 0x12       |
+| Opsis | Test UVC       | 0x2A19    | 0x5441     | 0x13       |
+| Atlys | Test JTAG      | 0x1D50    | 0x60b7     | 0x10       |
+| Atlys | Test Serial    | 0x1D50    | 0x60b7     | 0x11       |
+| Atlys | Test Audio     | 0x1D50    | 0x60b7     | 0x12       |
+| Atlys | Test UVC       | 0x1D50    | 0x60b7     | 0x13       |
+| MiniBoard | Unconfigured * | ??        | ???     | ???        |
+| MiniBoard | Test Serial    | 0x1D50    | ???     | 0x11       |
+| MiniBoard | Test Audio     | 0x1D50    | ???     | 0x12       |
+| MiniBoard | Test UVC       | 0x1D50    | ???     | 0x13       |
 
 ### Other USB IDs
 
@@ -43,3 +62,16 @@ For the Atlys, the [Openmoko project](http://wiki.openmoko.org/wiki/USB_Product_
 |  0x16C0   | Van Ooijen Technische Informatica | Original developers of ixo-usb-jtag. |
 |  0x1D50   | OpenMoko, Inc.                    | Originally made phones but now have [donated their ID to open source projects](http://wiki.openmoko.org/wiki/USB_Product_IDs). |
 |  0x2A19   | Numato Lab                        | Manufacturers of the Opsis board. |
+
+-------
+
+### Currently Unused USB Ids
+
+| Vendor ID | Product ID | Current Description |
+|:---------:|:----------:|:------|
+|  0x1d50   | 0x60b8     | TimVideos' HDMI2USB (Soft+UTMI) - Unconfigured device        |
+|  0x1d50   | 0x60b9     | TimVideos' HDMI2USB (Soft+UTMI) - Firmware upgrade           |
+|  0x1d50   | 0x60ba     | TimVideos' HDMI2USB (Soft+UTMI) - HDMI/DVI Capture Device    |
+|  0x1d50   | 0x60df     | Numato Opsis HDMI2USB board - unconfigured                   |
+|  0x1d50   | 0x60e0     | Numato Opsis HDMI2USB board - JTAG Programming Mode          |
+|  0x1d50   | 0x60e1     | Numato Opsis HDMI2USB board - User Mode                      |
