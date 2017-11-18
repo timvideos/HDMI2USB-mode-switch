@@ -1,0 +1,29 @@
+# Grant everyone permission to the HDMI2USBDEV devices.
+
+# USB device for using fxload
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USBDEV}=="1", \
+	MODE:="0660", GROUP:="video"
+
+# Serial control console
+SUBSYSTEM=="tty", ENV{ID_HDMI2USBDEV}=="1", \
+	MODE:="0660", GROUP:="video"
+
+# Video capture device
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USBDEV}=="1", \
+	MODE:="0660", GROUP:="video"
+
+# Allow the user to unbind the kernel drivers attached to the device
+SUBSYSTEM=="usb", DRIVER=="usb", ENV{ID_HDMI2USBDEV}=="1", \
+	TEST=="$sys$env{DEVPATH}/driver/unbind" \
+	RUN+="/bin/chmod 0660 $sys$env{DEVPATH}/driver/unbind" \
+	RUN+="/bin/chgrp video $sys$env{DEVPATH}/driver/unbind"
+
+SUBSYSTEM=="tty", ENV{ID_HDMI2USBDEV}=="1", \
+	TEST=="$sys$env{DEVPATH}/../../driver/unbind" \
+	RUN+="/bin/chmod 0660 $sys$env{DEVPATH}/../../driver/unbind" \
+	RUN+="/bin/chgrp video $sys$env{DEVPATH}/../../driver/unbind"
+
+SUBSYSTEM=="video4linux", ENV{ID_HDMI2USBDEV}=="1", \
+	TEST=="$sys$env{DEVPATH}/../../driver/unbind" \
+	RUN+="/bin/chmod 0660 $sys$env{DEVPATH}/../../driver/unbind" \
+	RUN+="/bin/chgrp video $sys$env{DEVPATH}/../../driver/unbind"
