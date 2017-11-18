@@ -1,0 +1,25 @@
+# Grant permissions to boards used for HDMI2USB development (but not production).
+
+# Digilent Arty
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0403", ATTRS{idProduct}=="6010", ATTRS{manufacturer}=="Digilent" \
+	ENV{ID_HDMI2USBDEV}:="1", ENV{ID_HDMI2USBDEV_BOARD}:="arty"
+
+# Digilent Nexys Video
+
+# Pipistrello
+
+# MimasV2
+SUBSYSTEM=="usb", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="1002", \
+	ENV{ID_HDMI2USBDEV}:="1", ENV{ID_HDMI2USBDEV_BOARD}:="mimasv2-"
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="1002", ATTRS{interface}=="SPI Flash", \
+	ENV{ID_HDMI2USBDEV}:="1", ENV{ID_HDMI2USBDEV_BOARD}:="mimasv2-" \
+	ENV{HDMI2USBDEV_TTY}:="-prog"
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="1002", ATTRS{interface}=="FPGA UART", \
+	ENV{ID_HDMI2USBDEV}:="1", ENV{ID_HDMI2USBDEV_BOARD}:="mimasv2-" \
+	ENV{HDMI2USBDEV_TTY}:="-uart"
+
+SUBSYSTEM=="tty", ATTRS{idVendor}=="2a19", ATTRS{idProduct}=="1002", ENV{HDMI2USBDEV_TTY}=="" \
+	ENV{ID_HDMI2USBDEV}:="1", ENV{ID_HDMI2USBDEV_BOARD}:="mimasv2-" \
+	ENV{HDMI2USBDEV_TTY}:="-combined"
