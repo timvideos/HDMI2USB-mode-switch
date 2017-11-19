@@ -16,7 +16,8 @@ install:
 	echo "udev rules installed; 'make reload' to reload udev rules"
 
 reload:
-	sudo udevadm control --reload-rules
+	sudo udevadm control --reload-rules; \
+	sudo udevadm trigger
 
 install-reload:
 	make install
