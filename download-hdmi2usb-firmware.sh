@@ -21,7 +21,8 @@ fi
 
 if [ -z "$PLATFORM" ]; then
         echo "You must set the platform you want to get firmware for."
-	echo ""
+	echo "examples:"
+	echo "PLATFORM=opsis TRACK=stable $0"
 	echo "PLATFORM=atlys TRACK=unstable $0"
         exit 1
 fi
