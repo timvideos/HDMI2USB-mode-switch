@@ -41,4 +41,5 @@ def test_libusb_and_lsusb_equal():
             assert libobj_inuse == lsobj_inuse, "inuse: %r == %r" % (
                 libobj_inuse, lsobj_inuse)
 
+
 test_libusb_and_lsusb_equal()

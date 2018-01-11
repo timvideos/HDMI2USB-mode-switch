@@ -1,7 +1,7 @@
 
 # conda
 CONDA_PACKAGES = openocd
-PYTHON_PACKAGES = pyusb pep8 autopep8 setuptools-pep8
+PYTHON_PACKAGES = pyusb pycodestyle autopep8 setuptools-pep8
 include conda.mk
 
 # pypi upload
@@ -51,8 +51,8 @@ version:
 	python3 setup.py version
 
 check:
-	pep8 hdmi2usb --ignore=E402
-	pep8 *.py
+	pycodestyle hdmi2usb --ignore=E402
+	pycodestyle *.py
 
 fix:
 	autopep8 -v -r -i -a -a hdmi2usb
