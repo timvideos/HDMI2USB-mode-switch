@@ -9,7 +9,7 @@ conda/bin/conda: Miniconda3-latest-Linux-x86_64.sh
 	chmod a+x Miniconda3-latest-Linux-x86_64.sh
 	./Miniconda3-latest-Linux-x86_64.sh -p conda -b
 
-conda/.condarc:
+conda/.condarc: conda.mk
 	conda config --system --set always_yes yes --set changeps1 no
 	conda config --system --add channels timvideos
 
