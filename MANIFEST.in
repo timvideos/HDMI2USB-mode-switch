@@ -3,3 +3,4 @@ include hdmi2usb/_version.py
 include versioneer.py
 include README.md
 recursive-include udev *
+include hdmi2usb/modeswitch/_version.py
