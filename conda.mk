@@ -13,10 +13,10 @@ conda/.condarc:
 	conda config --system --set always_yes yes --set changeps1 no
 	conda config --system --add channels timvideos
 
-conda/bin/%: conda/bin/conda
+conda/bin/%: conda/bin/conda conda/.condarc
 	conda install $(shell basename $@)
 
-conda/.modules/%: conda/bin/conda
+conda/.modules/%: conda/bin/conda conda/.condarc
 	mkdir -p $(shell dirname $@)
 	pip install $(shell basename $@)
 	touch $@
