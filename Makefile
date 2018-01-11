@@ -1,29 +1,8 @@
 
 # conda
-export PATH := $(shell pwd)/conda/bin:$(PATH)
-
-conda:
-	wget -c https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
-	chmod a+x Miniconda3-latest-Linux-x86_64.sh
-	./Miniconda3-latest-Linux-x86_64.sh -p $@ -b
-	conda config --set always_yes yes --set changeps1 no
-	conda update -q conda
-	conda config --add channels timvideos
-	conda install openocd
-	pip install pyusb
-	pip install pep8
-	pip install autopep8
-	pip install setuptools-pep8
-	python3 setup.py develop
-
-check-conda:
-	[ -d conda ]
-
-clean-conda:
-	rm -rf Miniconda3-latest-Linux-x86_64.sh
-	rm -rf conda
-
-.PHONY: conda check-conda clean-conda
+CONDA_PACKAGES = openocd
+PYTHON_PACKAGES = pyusb pep8 autopep8 setuptools-pep8
+include conda.mk
 
 # pypi upload
 test-upload:
