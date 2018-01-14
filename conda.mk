@@ -28,7 +28,7 @@ DEPS := \
 	$(foreach P,$(CONDA_PACKAGES),conda/bin/$(P))
 
 conda: $(DEPS)
-	@true
+	python setup.py develop
 
 check-conda:
 	[ -d conda ]
