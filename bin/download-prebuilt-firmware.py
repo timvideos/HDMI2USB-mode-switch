@@ -46,10 +46,11 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Download prebuilt firmware')
 parser.add_argument('--user', help='Github user to download from.', default="timvideos")
-parser.add_argument('--version', help='Get a specific version.')
+parser.add_argument('--rev', help='Get a specific version.')
 parser.add_argument('--platform', help='Get for a specific platform (board + expansion boards configuration).')
 parser.add_argument('--board', help='Alias for --platform.', dest="platform")
-parser.add_argument('--channel', help="Get latest version from in a specific channel.", default="unstable")
+parser.add_argument('--channel', help="Get latest version from in a specific channel ().", default="unstable")
+parser.add_argument('--tag', help='Alias for --channel.', dest="channel")
 parser.add_argument('--latest', help="Get the latest version.", dest="channel", action="store_const", const="unstable")
 parser.add_argument('--branch', help="Branch to download from.", default="master")
 parser.add_argument('--target', help="Target to download from.", default="hdmi2usb")
@@ -59,7 +60,7 @@ parser.add_argument('--arch', help="Soft-CPU architecture to download from.", de
 
 args = parser.parse_args()
 assert args.platform
-assert args.version or args.channel
+assert args.rev or args.channel
 assert args.target
 
 details = {
@@ -68,20 +69,20 @@ details = {
         "branch": args.branch,
 }
 archive_url = "http://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(**details)
-versions = ls_github(archive_url)
-possible_versions = [Version(d['name']) for d in versions if d['type'] == 'dir']
-possible_versions.sort()
+revs = ls_github(archive_url)
+possible_revs = [Version(d['name']) for d in revs if d['type'] == 'dir']
+possible_revs.sort()
 
-version = parser.version
-if not version:
+rev = args.rev
+if not rev:
 
     channel = args.channel
     if channel == "unstable":
-        version = possible_versions[-1]
+        rev = possible_revs[-1]
     else:
         data = urllib.urlopen("https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv").read()
 
-        version_names = {}
+        rev_names = {}
         for i in csv.reader(data.splitlines(), dialect='excel'):
             if not i:
                 continue
@@ -91,38 +92,39 @@ if not version:
                 print("Skipping row %s" % i)
                 continue
 
-            _, _, version_str, name, conf, _ = i
-            version = Version(version_str)
-            assert version in possible_versions
-            assert name not in version_names, "{} is listed multiple times!".format(name)
-            version_names[name] = version_str
+            _, _, rev_str, name, conf, _ = i
+            rev = Version(rev_str)
+            assert rev in possible_revs
+            assert name not in rev_names, "{} is listed multiple times!".format(name)
+            rev_names[name] = rev
 
-        if channel not in version_names:
-            print("Did not find {} in {}".format(channel, version_names))
+        if channel not in rev_names:
+            print("Did not find {} in {}".format(channel, rev_names))
             sys.exit(1)
 
-        version = version_names[channel]
+        rev = rev_names[channel]
 
-    print("Channel {} is at version {}".format(channel, version))
+    print("Channel {} is at rev {}".format(channel, rev))
 else:
-    assert version in possible_versions, "{} is not found in {}".format(version, possible_versions)
+    rev=Version(rev)
+    assert rev in possible_revs, "{} is not found in {}".format(rev, possible_revs)
 
-version_url = "{}{:s}/".format(archive_url, version)
-platforms = ls_github(version_url)
+rev_url = "{}{:s}/".format(archive_url, rev)
+platforms = ls_github(rev_url)
 possible_platforms = [d['name'] for d in platforms if d['type'] == 'dir']
 print("Found platforms: {}".format(", ".join(possible_platforms)))
 
 if args.platform not in possible_platforms:
-    print("Did not find platform {} at version {} (found {})".format(args.platform, version, ", ".join(possible_platforms)))
+    print("Did not find platform {} at rev {} (found {})".format(args.platform, rev, ", ".join(possible_platforms)))
     sys.exit(1)
 
-targets_url = "{}{:s}/".format(version_url, args.platform)
+targets_url = "{}{:s}/".format(rev_url, args.platform)
 targets = ls_github(targets_url)
 possible_targets = [d['name'] for d in targets if d['type'] == 'dir']
 print("Found targets: {}".format(", ".join(possible_targets)))
 
 if args.target not in possible_targets:
-    print("Did not find target {} for platform {} at version {} (found {})".format(args.target, args.platform, version, ", ".join(possible_targets)))
+    print("Did not find target {} for platform {} at rev {} (found {})".format(args.target, args.platform, rev, ", ".join(possible_targets)))
     sys.exit(1)
 
 archs_url = "{}{:s}/".format(targets_url, args.target)
@@ -131,7 +133,7 @@ possible_archs = [d['name'] for d in archs if d['type'] == 'dir']
 print("Found archs: {}".format(", ".join(possible_archs)))
 
 if args.arch not in possible_archs:
-    print("Did not find arch {} for target {} for platform {} at version {} (found {})".format(args.arch, args.target, args.platform, version, ", ".join(possible_firmwares)))
+    print("Did not find arch {} for target {} for platform {} at rev {} (found {})".format(args.arch, args.target, args.platform, rev, ", ".join(possible_firmwares)))
     sys.exit(1)
 
 firmwares_url = "{}{:s}/".format(archs_url, args.arch)
@@ -146,15 +148,15 @@ for f in possible_firmwares:
         break
 
 if not filename:
-    print("Did not find firmware {} for target {} for platform {} at version {} (found {})".format(args.firmware, args.target, args.platform, version, ", ".join(possible_firmwares)))
+    print("Did not find firmware {} for target {} for platform {} at rev {} (found {})".format(args.firmware, args.target, args.platform, rev, ", ".join(possible_firmwares)))
     sys.exit(1)
 
-image_url = "https://github.com/{user}/HDMI2USB-firmware-prebuilt/raw/master/archive/{branch}/{version}/{platform}/{target}/{arch}/{filename}".format(
-    user=args.user, branch=args.branch, version=version, platform=args.platform, target=args.target, arch=args.arch, filename=filename)
+image_url = "https://github.com/{user}/HDMI2USB-firmware-prebuilt/raw/master/archive/{branch}/{rev}/{platform}/{target}/{arch}/{filename}".format(
+    user=args.user, branch=args.branch, rev=rev, platform=args.platform, target=args.target, arch=args.arch, filename=filename)
 print("Image URL: {}".format(image_url))
 
 parts = os.path.splitext(filename)
-out_filename = ".".join(list(parts[:-1]) + [str(version), args.platform, args.target, args.arch, parts[-1][1:]])
+out_filename = ".".join(list(parts[:-1]) + [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
 print("Downloading to: {}".format(out_filename))
 urllib.urlretrieve(image_url, out_filename)
 print("Done!")
