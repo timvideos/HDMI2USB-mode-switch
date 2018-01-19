@@ -1,3 +1,7 @@
+#!/usr/bin/env python
+
+# FIXME: Make this work under Python 3 and Python 2
+
 import csv
 import json
 import os
