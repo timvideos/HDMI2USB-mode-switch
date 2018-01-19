@@ -133,7 +133,7 @@ possible_archs = [d['name'] for d in archs if d['type'] == 'dir']
 print("Found archs: {}".format(", ".join(possible_archs)))
 
 if args.arch not in possible_archs:
-    print("Did not find arch {} for target {} for platform {} at rev {} (found {})".format(args.arch, args.target, args.platform, rev, ", ".join(possible_firmwares)))
+    print("Did not find arch {} for target {} for platform {} at rev {} (found {})".format(args.arch, args.target, args.platform, rev, ", ".join(possible_archs)))
     sys.exit(1)
 
 firmwares_url = "{}{:s}/".format(archs_url, args.arch)
