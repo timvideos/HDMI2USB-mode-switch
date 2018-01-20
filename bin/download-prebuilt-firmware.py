@@ -68,7 +68,8 @@ details = {
         "repo": "HDMI2USB-firmware-prebuilt",
         "branch": args.branch,
 }
-archive_url = "http://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(**details)
+archive_url = "https://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(**details)
+print("revs = ls_github(archive_url) {}".format( archive_url ) )
 revs = ls_github(archive_url)
 possible_revs = [Version(d['name']) for d in revs if d['type'] == 'dir']
 possible_revs.sort()
