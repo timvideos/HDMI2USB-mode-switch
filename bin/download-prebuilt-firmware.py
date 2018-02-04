@@ -7,12 +7,12 @@ import json
 import os
 import sys
 import time
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 
 def ls_github(url):
     while True:
-        data = json.loads(urllib.urlopen(url).read())
+        data = json.loads(urllib.request.urlopen(url).read().decode())
         if "message" in data:
             print("Warning: {}".format(data["message"]))
             time.sleep(1)
@@ -81,7 +81,7 @@ if not rev:
     if channel == "unstable":
         rev = possible_revs[-1]
     else:
-        data = urllib.urlopen("https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv").read()
+        data = urllib.request.urlopen("https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv").read()
 
         rev_names = {}
         for i in csv.reader(data.splitlines(), dialect='excel'):
@@ -110,7 +110,8 @@ else:
     rev=Version(rev)
     assert rev in possible_revs, "{} is not found in {}".format(rev, possible_revs)
 
-rev_url = "{}{:s}/".format(archive_url, rev)
+print(archive_url, rev)
+rev_url = "{}{:s}/".format(archive_url, str(rev))
 platforms = ls_github(rev_url)
 possible_platforms = [d['name'] for d in platforms if d['type'] == 'dir']
 print("Found platforms: {}".format(", ".join(possible_platforms)))
@@ -159,5 +160,5 @@ print("Image URL: {}".format(image_url))
 parts = os.path.splitext(filename)
 out_filename = ".".join(list(parts[:-1]) + [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
 print("Downloading to: {}".format(out_filename))
-urllib.urlretrieve(image_url, out_filename)
+urllib.request.urlretrieve(image_url, out_filename)
 print("Done!")
