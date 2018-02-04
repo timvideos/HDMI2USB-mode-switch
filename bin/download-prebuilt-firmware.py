@@ -14,7 +14,7 @@ def ls_github(url):
     while True:
         data = json.loads(urllib.request.urlopen(url).read().decode())
         if "message" in data:
-            print(("Warning: {}".format(data["message"])))
+            print("Warning: {}".format(data["message"]))
             time.sleep(1)
             continue
         return data
@@ -89,7 +89,7 @@ if not rev:
             if i[0] != "GitHub":
                 continue
             if len(i) != 6:
-                print(("Skipping row %s" % i))
+                print("Skipping row %s" % i)
                 continue
 
             _, _, rev_str, name, conf, _ = i
@@ -99,39 +99,39 @@ if not rev:
             rev_names[name] = rev
 
         if channel not in rev_names:
-            print(("Did not find {} in {}".format(channel, rev_names)))
+            print("Did not find {} in {}".format(channel, rev_names))
             sys.exit(1)
 
         rev = rev_names[channel]
 
-    print(("Channel {} is at rev {}".format(channel, rev)))
+    print("Channel {} is at rev {}".format(channel, rev))
 else:
     rev=Version(rev)
     assert rev in possible_revs, "{} is not found in {}".format(rev, possible_revs)
 
-print((archive_url, rev))
+print(archive_url, rev)
 rev_url = "{}{:s}/".format(archive_url, str(rev))
 platforms = ls_github(rev_url)
 possible_platforms = [d['name'] for d in platforms if d['type'] == 'dir']
-print(("Found platforms: {}".format(", ".join(possible_platforms))))
+print("Found platforms: {}".format(", ".join(possible_platforms)))
 
 if args.platform not in possible_platforms:
-    print(("Did not find platform {} at rev {} (found {})".format(args.platform, rev, ", ".join(possible_platforms))))
+    print("Did not find platform {} at rev {} (found {})".format(args.platform, rev, ", ".join(possible_platforms)))
     sys.exit(1)
 
 targets_url = "{}{:s}/".format(rev_url, args.platform)
 targets = ls_github(targets_url)
 possible_targets = [d['name'] for d in targets if d['type'] == 'dir']
-print(("Found targets: {}".format(", ".join(possible_targets))))
+print("Found targets: {}".format(", ".join(possible_targets)))
 
 if args.target not in possible_targets:
-    print(("Did not find target {} for platform {} at rev {} (found {})".format(args.target, args.platform, rev, ", ".join(possible_targets))))
+    print("Did not find target {} for platform {} at rev {} (found {})".format(args.target, args.platform, rev, ", ".join(possible_targets)))
     sys.exit(1)
 
 archs_url = "{}{:s}/".format(targets_url, args.target)
 archs = ls_github(archs_url)
 possible_archs = [d['name'] for d in archs if d['type'] == 'dir']
-print(("Found archs: {}".format(", ".join(possible_archs))))
+print("Found archs: {}".format(", ".join(possible_archs)))
 
 if args.arch not in possible_archs:
     print("Did not find arch {} for target {} for platform {} at rev {} (found {})".format(args.arch, args.target, args.platform, rev, ", ".join(possible_archs)))
@@ -140,7 +140,7 @@ if args.arch not in possible_archs:
 firmwares_url = "{}{:s}/".format(archs_url, args.arch)
 firmwares = ls_github(firmwares_url)
 possible_firmwares = [d['name'] for d in firmwares if d['type'] == 'file' and d['name'].endswith('.bin')]
-print(("Found firmwares: {}".format(", ".join(possible_firmwares))))
+print("Found firmwares: {}".format(", ".join(possible_firmwares)))
 
 filename = None
 for f in possible_firmwares:
@@ -149,15 +149,15 @@ for f in possible_firmwares:
         break
 
 if not filename:
-    print(("Did not find firmware {} for target {} for platform {} at rev {} (found {})".format(args.firmware, args.target, args.platform, rev, ", ".join(possible_firmwares))))
+    print("Did not find firmware {} for target {} for platform {} at rev {} (found {})".format(args.firmware, args.target, args.platform, rev, ", ".join(possible_firmwares)))
     sys.exit(1)
 
 image_url = "https://github.com/{user}/HDMI2USB-firmware-prebuilt/raw/master/archive/{branch}/{rev}/{platform}/{target}/{arch}/{filename}".format(
     user=args.user, branch=args.branch, rev=rev, platform=args.platform, target=args.target, arch=args.arch, filename=filename)
-print(("Image URL: {}".format(image_url)))
+print("Image URL: {}".format(image_url))
 
 parts = os.path.splitext(filename)
 out_filename = ".".join(list(parts[:-1]) + [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
-print(("Downloading to: {}".format(out_filename)))
+print("Downloading to: {}".format(out_filename))
 urllib.request.urlretrieve(image_url, out_filename)
 print("Done!")
