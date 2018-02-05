@@ -291,7 +291,6 @@ def main():
 
     archive_url = get_url(args)
     possible_revs = get_revs(archive_url)
-    print(possible_revs)
     rev = get_rev(args, possible_revs)
     rev_url = get_rev_url(archive_url, rev)
 
