@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
-# FIXME: Make this work under Python 3 and Python 2
+# FIXME: Make this work under Python 2
 
+import argparse
+from collections import namedtuple
 import csv
+import doctest
 import json
 import os
 import sys
 import time
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 
 
 def ls_github(url):
@@ -19,9 +22,8 @@ def ls_github(url):
             continue
         return data
 
-
-from collections import namedtuple
 _Version = namedtuple("Version", ("version", "commits", "hash"))
+
 
 class Version(_Version):
     """
@@ -31,6 +33,7 @@ class Version(_Version):
     >>> str(v)
     'v0.0.4-44-g0cd842f'
     """
+
     def __new__(cls, value):
         version, commits, githash = value.split('-')
         commits = int(commits)
@@ -40,53 +43,70 @@ class Version(_Version):
     def __str__(self):
         return "%s-%i-g%s" % self
 
-import doctest
+
 doctest.testmod()
 
-import argparse
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(description='Download prebuilt firmware')
-    parser.add_argument('--user', help='Github user to download from.', default="timvideos")
-    parser.add_argument('--rev', help='Get a specific version.')
-    parser.add_argument('--platform', help='Get for a specific platform (board + expansion boards configuration).')
-    parser.add_argument('--board', help='Alias for --platform.', dest="platform")
-    parser.add_argument('--channel', help="Get latest version from in a specific channel ().", default="unstable")
-    parser.add_argument('--tag', help='Alias for --channel.', dest="channel")
-    parser.add_argument('--latest', help="Get the latest version.", dest="channel", action="store_const", const="unstable")
-    parser.add_argument('--branch', help="Branch to download from.", default="master")
-    parser.add_argument('--target', help="Target to download from.", default="hdmi2usb")
-    parser.add_argument('--firmware', help="Firmware to download from.", default="firmware")
-    parser.add_argument('--arch', help="Soft-CPU architecture to download from.", default="lm32")
-
+    parser = argparse.ArgumentParser(
+            description='Download prebuilt firmware')
+    parser.add_argument('--user',
+            help='Github user to download from.', default="timvideos")
+    parser.add_argument('--rev',
+            help='Get a specific version.')
+    parser.add_argument('--platform',
+            help='Get for a specific platform (board + expansion boards configuration).')
+    parser.add_argument('--board',
+            help='Alias for --platform.', dest="platform")
+    parser.add_argument('--channel',
+            help="Get latest version from in a specific channel ().",
+            default="unstable")
+    parser.add_argument('--tag',
+            help='Alias for --channel.', dest="channel")
+    parser.add_argument('--latest', dest="channel", action="store_const",
+            help="Get the latest version.",
+            const="unstable")
+    parser.add_argument('--branch',
+            help="Branch to download from.", default="master")
+    parser.add_argument('--target',
+            help="Target to download from.", default="hdmi2usb")
+    parser.add_argument('--firmware',
+            help="Firmware to download from.", default="firmware")
+    parser.add_argument('--arch', default="lm32",
+            help="Soft-CPU architecture to download from.")
 
     args = parser.parse_args()
+
     assert args.platform
     assert args.rev or args.channel
     assert args.target
 
     return args
 
-def get_url( args ):
+
+def get_url(args):
 
     details = {
-            "owner": args.user,
-            "repo": "HDMI2USB-firmware-prebuilt",
-            "branch": args.branch,
+        "owner": args.user,
+        "repo": "HDMI2USB-firmware-prebuilt",
+        "branch": args.branch,
     }
-    archive_url = "https://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(**details)
+    archive_url = "https://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(
+        **details)
 
     return archive_url
 
+
 def get_revs(archive_url):
 
-    print("revs = ls_github(archive_url) {}".format( archive_url ) )
+    print("revs = ls_github(archive_url) {}".format(archive_url))
     revs = ls_github(archive_url)
     possible_revs = [Version(d['name']) for d in revs if d['type'] == 'dir']
     possible_revs.sort()
 
     return possible_revs
+
 
 def get_rev(args, possible_revs):
 
@@ -97,7 +117,9 @@ def get_rev(args, possible_revs):
         if channel == "unstable":
             rev = possible_revs[-1]
         else:
-            data = urllib.request.urlopen("https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv").read()
+            data = urllib.request.urlopen(
+                "https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv"
+            ).read()
 
             rev_names = {}
             for i in csv.reader(data.splitlines(), dialect='excel'):
@@ -112,7 +134,8 @@ def get_rev(args, possible_revs):
                 _, _, rev_str, name, conf, _ = i
                 rev = Version(rev_str)
                 assert rev in possible_revs
-                assert name not in rev_names, "{} is listed multiple times!".format(name)
+                assert name not in rev_names, "{} is listed multiple times!".format(
+                    name)
                 rev_names[name] = rev
 
             if channel not in rev_names:
@@ -123,18 +146,21 @@ def get_rev(args, possible_revs):
 
         print("Channel {} is at rev {}".format(channel, rev))
     else:
-        rev=Version(rev)
-        assert rev in possible_revs, "{} is not found in {}".format(rev, possible_revs)
+        rev = Version(rev)
+        assert rev in possible_revs, "{} is not found in {}".format(
+            rev, possible_revs)
 
     print("rev: {}".format(rev))
 
     return rev
+
 
 def get_rev_url(archive_url, rev):
 
     rev_url = "{}{:s}/".format(archive_url, str(rev))
 
     return rev_url
+
 
 def get_platforms(args, rev_url):
 
@@ -143,16 +169,19 @@ def get_platforms(args, rev_url):
     print("Found platforms: {}".format(", ".join(possible_platforms)))
 
     if args.platform not in possible_platforms:
-        print("Did not find platform {} at rev {} (found {})".format(args.platform, rev, ", ".join(possible_platforms)))
+        print("Did not find platform {} at rev {} (found {})".format(
+            args.platform, rev, ", ".join(possible_platforms)))
         sys.exit(1)
 
     return possible_platforms
+
 
 def get_targets_url(args, rev_url):
 
     targets_url = "{}{:s}/".format(rev_url, args.platform)
 
     return targets_url
+
 
 def get_targets(args, rev, targets_url):
 
@@ -161,16 +190,20 @@ def get_targets(args, rev, targets_url):
     print("Found targets: {}".format(", ".join(possible_targets)))
 
     if args.target not in possible_targets:
-        print("Did not find target {} for platform {} at rev {} (found {})".format(args.target, args.platform, rev, ", ".join(possible_targets)))
+        print("Did not find target {} for platform {} at rev {} (found {})".
+              format(args.target, args.platform, rev,
+                     ", ".join(possible_targets)))
         sys.exit(1)
 
     return possible_targets
+
 
 def get_archs_url(args, targets_url):
 
     archs_url = "{}{:s}/".format(targets_url, args.target)
 
     return archs_url
+
 
 def get_archs(args, archs_url):
 
@@ -179,10 +212,14 @@ def get_archs(args, archs_url):
     print("Found archs: {}".format(", ".join(possible_archs)))
 
     if args.arch not in possible_archs:
-        print("Did not find arch {} for target {} for platform {} at rev {} (found {})".format(args.arch, args.target, args.platform, rev, ", ".join(possible_archs)))
+        print(
+            "Did not find arch {} for target {} for platform {} at rev {} (found {})".
+            format(args.arch, args.target, args.platform, rev,
+                   ", ".join(possible_archs)))
         sys.exit(1)
 
     return possible_archs
+
 
 def get_firmwares_url(args, archs_url):
 
@@ -190,13 +227,18 @@ def get_firmwares_url(args, archs_url):
 
     return firmwares_url
 
+
 def get_firmwares(args, firmwares_url):
 
     firmwares = ls_github(firmwares_url)
-    possible_firmwares = [d['name'] for d in firmwares if d['type'] == 'file' and d['name'].endswith('.bin')]
+    possible_firmwares = [
+        d['name'] for d in firmwares
+        if d['type'] == 'file' and d['name'].endswith('.bin')
+    ]
     print("Found firmwares: {}".format(", ".join(possible_firmwares)))
 
     return possible_firmwares
+
 
 def get_filename(args, possible_firmwares):
 
@@ -207,27 +249,41 @@ def get_filename(args, possible_firmwares):
             break
 
     if not filename:
-        print("Did not find firmware {} for target {} for platform {} at rev {} (found {})".format(args.firmware, args.target, args.platform, rev, ", ".join(possible_firmwares)))
+        print(
+            "Did not find firmware {} for target {} for platform {} at rev {} (found {})".
+            format(args.firmware, args.target, args.platform, rev,
+                   ", ".join(possible_firmwares)))
         sys.exit(1)
 
     return filename
 
+
 def get_image_url(args, rev, filename):
 
     image_url = "https://github.com/{user}/HDMI2USB-firmware-prebuilt/raw/master/archive/{branch}/{rev}/{platform}/{target}/{arch}/{filename}".format(
-        user=args.user, branch=args.branch, rev=rev, platform=args.platform, target=args.target, arch=args.arch, filename=filename)
+        user=args.user,
+        branch=args.branch,
+        rev=rev,
+        platform=args.platform,
+        target=args.target,
+        arch=args.arch,
+        filename=filename)
     print("Image URL: {}".format(image_url))
 
     return image_url
 
+
 def download(args, rev, filename, image_url):
 
     parts = os.path.splitext(filename)
-    out_filename = ".".join(list(parts[:-1]) + [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
+    out_filename = ".".join(
+        list(parts[:-1]) +
+        [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
     print("Downloading to: {}".format(out_filename))
     urllib.request.urlretrieve(image_url, out_filename)
 
     return True
+
 
 def main():
 
@@ -235,7 +291,6 @@ def main():
 
     archive_url = get_url(args)
     possible_revs = get_revs(archive_url)
-    print(possible_revs)
     rev = get_rev(args, possible_revs)
     rev_url = get_rev_url(archive_url, rev)
 
@@ -258,6 +313,7 @@ def main():
     print("Done!")
 
     return
+
 
 if __name__ == "__main__":
     main()
