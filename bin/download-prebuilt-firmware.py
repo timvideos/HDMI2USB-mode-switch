@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# FIXME: Make this work under Python 2 (maybe done)
+# FIXME: Make this work under Python 2
 
 import argparse
 from collections import namedtuple
