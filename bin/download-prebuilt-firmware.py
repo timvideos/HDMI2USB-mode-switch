@@ -2,12 +2,15 @@
 
 # FIXME: Make this work under Python 2 (maybe done)
 
+import argparse
+from collections import namedtuple
 import csv
+import doctest
 import json
 import os
 import sys
 import time
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
 
 
 def ls_github(url):
@@ -19,8 +22,6 @@ def ls_github(url):
             continue
         return data
 
-
-from collections import namedtuple
 _Version = namedtuple("Version", ("version", "commits", "hash"))
 
 
@@ -43,48 +44,40 @@ class Version(_Version):
         return "%s-%i-g%s" % self
 
 
-import doctest
 doctest.testmod()
-
-import argparse
 
 
 def parse_args():
 
-    parser = argparse.ArgumentParser(description='Download prebuilt firmware')
-    parser.add_argument(
-        '--user', help='Github user to download from.', default="timvideos")
-    parser.add_argument('--rev', help='Get a specific version.')
-    parser.add_argument(
-        '--platform',
-        help=
-        'Get for a specific platform (board + expansion boards configuration).'
-    )
-    parser.add_argument(
-        '--board', help='Alias for --platform.', dest="platform")
-    parser.add_argument(
-        '--channel',
-        help="Get latest version from in a specific channel ().",
-        default="unstable")
-    parser.add_argument('--tag', help='Alias for --channel.', dest="channel")
-    parser.add_argument(
-        '--latest',
-        help="Get the latest version.",
-        dest="channel",
-        action="store_const",
-        const="unstable")
-    parser.add_argument(
-        '--branch', help="Branch to download from.", default="master")
-    parser.add_argument(
-        '--target', help="Target to download from.", default="hdmi2usb")
-    parser.add_argument(
-        '--firmware', help="Firmware to download from.", default="firmware")
-    parser.add_argument(
-        '--arch',
-        help="Soft-CPU architecture to download from.",
-        default="lm32")
+    parser = argparse.ArgumentParser(
+            description='Download prebuilt firmware')
+    parser.add_argument('--user',
+            help='Github user to download from.', default="timvideos")
+    parser.add_argument('--rev',
+            help='Get a specific version.')
+    parser.add_argument('--platform',
+            help='Get for a specific platform (board + expansion boards configuration).')
+    parser.add_argument('--board',
+            help='Alias for --platform.', dest="platform")
+    parser.add_argument('--channel',
+            help="Get latest version from in a specific channel ().",
+            default="unstable")
+    parser.add_argument('--tag',
+            help='Alias for --channel.', dest="channel")
+    parser.add_argument('--latest', dest="channel", action="store_const",
+            help="Get the latest version.",
+            const="unstable")
+    parser.add_argument('--branch',
+            help="Branch to download from.", default="master")
+    parser.add_argument('--target',
+            help="Target to download from.", default="hdmi2usb")
+    parser.add_argument('--firmware',
+            help="Firmware to download from.", default="firmware")
+    parser.add_argument('--arch', default="lm32",
+            help="Soft-CPU architecture to download from.")
 
     args = parser.parse_args()
+
     assert args.platform
     assert args.rev or args.channel
     assert args.target
