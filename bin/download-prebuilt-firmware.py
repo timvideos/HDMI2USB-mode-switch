@@ -8,19 +8,45 @@ import csv
 import doctest
 import json
 import os
+from pprint import pprint
 import sys
 import time
 import urllib.request
 
+class Target_not_found(Exception):
+    pass
 
 def ls_github(url):
-    while True:
-        data = json.loads(urllib.request.urlopen(url).read().decode())
-        if "message" in data:
-            print("Warning: {}".format(data["message"]))
-            time.sleep(1)
-            continue
-        return data
+
+    cache_name = "github.json"
+    def load_cache():
+        try:
+            cache = json.load(open(cache_name))
+        except IOError as e:
+            cache = {}
+        return cache
+
+    def save_cache(cache):
+        json.dump(cache, open(cache_name,'w'), indent=2)
+
+    cache = load_cache()
+    if url in cache:
+        data = cache[url]
+    else:
+        while True:
+            data = json.loads(urllib.request.urlopen(url).read().decode())
+            # data = {"message":"foo"}
+            # data = {"bar":"foo"}
+            if "message" in data:
+                print("Warning: {}".format(data["message"]))
+                time.sleep(1)
+                continue
+            else:
+                break
+        cache[url]=data
+        save_cache(cache)
+
+    return data
 
 _Version = namedtuple("Version", ("version", "commits", "hash"))
 
@@ -193,10 +219,32 @@ def get_targets(args, rev, targets_url):
         print("Did not find target {} for platform {} at rev {} (found {})".
               format(args.target, args.platform, rev,
                      ", ".join(possible_targets)))
-        sys.exit(1)
+        # pprint(possible_targets)
+        raise Target_not_found()
 
     return possible_targets
 
+def find_last_rev(args, possible_revs):
+
+    possible_revs.reverse()
+
+    archive_url = get_url(args)
+
+    for rev in possible_revs:
+
+
+        # rev = get_rev(args, possible_revs)
+        rev_url = get_rev_url(archive_url, rev)
+
+        possible_platforms = get_platforms(args, rev_url)
+
+        targets_url = get_targets_url(args, rev_url)
+        try:
+            possible_targets = get_targets(args, rev, targets_url)
+            print("found at rev {}".format(rev))
+            sys.exit(1)
+        except Target_not_found as e:
+            pass
 
 def get_archs_url(args, targets_url):
 
@@ -297,7 +345,10 @@ def main():
     possible_platforms = get_platforms(args, rev_url)
 
     targets_url = get_targets_url(args, rev_url)
-    possible_targets = get_targets(args, rev, targets_url)
+    try:
+        possible_targets = get_targets(args, rev, targets_url)
+    except Target_not_found as e:
+        find_last_rev(args, possible_revs)
 
     archs_url = get_archs_url(args, targets_url)
     possible_archs = get_archs(args, archs_url)
