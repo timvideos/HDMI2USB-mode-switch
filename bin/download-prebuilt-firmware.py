@@ -50,10 +50,10 @@ def ls_github(url, cache_ttl=None):
             else:
                 break
         cache[url] = {
-                'timestamp': datetime.now(),
-                'data': data
-                }
-        save_cache(cache)
+            'timestamp': datetime.now(),
+            'data': data
+        }
+    save_cache(cache)
 
     return data
 
@@ -237,19 +237,14 @@ def find_last_rev(args, possible_revs):
 
     possible_revs.reverse()
     archive_url = get_url(args)
-
     for rev in possible_revs:
-
         rev_url = get_rev_url(archive_url, rev)
-
         possible_platforms = get_platforms(args, rev_url)
-
         targets_url = get_targets_url(args, rev_url)
         try:
             possible_targets = get_targets(args, rev, targets_url)
             print("found at rev {}".format(rev))
             return rev
-
         except TargetNotFound:
             continue
 
