@@ -3,17 +3,18 @@
 # FIXME: Make this work under Python 2
 
 import argparse
-from collections import namedtuple
 import csv
-from datetime import datetime
 import doctest
 import json
 import os
 import pickle
-from pprint import pprint
 import sys
 import time
 import urllib.request
+
+from collections import namedtuple
+from datetime import datetime
+from pprint import pprint
 
 
 class TargetNotFound(Exception):
@@ -35,10 +36,9 @@ def ls_github(url, cache_ttl=None):
         pickle.dump(cache, open(cache_name, 'wb'))
 
     cache = load_cache()
-    if url in cache and \
-            (cache_ttl is None or
-                ((datetime.now()-cache[url]['timestamp']).total_seconds() <
-                    cache_ttl)):
+    if url in cache and (cache_ttl is None or (
+        (datetime.now()-cache[url]['timestamp']).total_seconds() <
+            cache_ttl)):
         data = cache[url]['data']
     else:
         while True:
