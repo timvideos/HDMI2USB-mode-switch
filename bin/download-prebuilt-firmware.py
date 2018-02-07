@@ -22,6 +22,7 @@ class TargetNotFound(Exception):
 
 def ls_github(url, cache_ttl=None):
 
+    # FIXME: Move cache to a class or find a package.
     cache_name = "github.pickle"
 
     def load_cache():
@@ -227,7 +228,6 @@ def get_targets(args, rev, targets_url):
         print("Did not find target {} for platform {} at rev {} (found {})".
               format(args.target, args.platform, rev,
                      ", ".join(possible_targets)))
-        # pprint(possible_targets)
         raise TargetNotFound()
 
     return possible_targets
