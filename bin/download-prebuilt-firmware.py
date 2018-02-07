@@ -14,7 +14,6 @@ import urllib.request
 
 from collections import namedtuple
 from datetime import datetime
-from pprint import pprint
 
 
 class TargetNotFound(Exception):
@@ -28,7 +27,7 @@ def ls_github(url, cache_ttl=None):
     def load_cache():
         try:
             cache = pickle.load(open(cache_name, 'rb'))
-        except IOError as e:
+        except IOError:
             cache = {}
         return cache
 
@@ -251,7 +250,7 @@ def find_last_rev(args, possible_revs):
             print("found at rev {}".format(rev))
             return rev
 
-        except TargetNotFound as e:
+        except TargetNotFound:
             continue
 
 
@@ -358,7 +357,7 @@ def main():
     targets_url = get_targets_url(args, rev_url)
     try:
         possible_targets = get_targets(args, rev, targets_url)
-    except TargetNotFound as e:
+    except TargetNotFound:
         rev = find_last_rev(args, possible_revs)
         # TODO: use this rev instead.
         sys.exit(1)
