@@ -3,24 +3,59 @@
 # FIXME: Make this work under Python 2
 
 import argparse
-from collections import namedtuple
 import csv
 import doctest
 import json
 import os
+import pickle
 import sys
 import time
 import urllib.request
 
+from collections import namedtuple
+from datetime import datetime
 
-def ls_github(url):
-    while True:
-        data = json.loads(urllib.request.urlopen(url).read().decode())
-        if "message" in data:
-            print("Warning: {}".format(data["message"]))
-            time.sleep(1)
-            continue
-        return data
+
+class TargetNotFound(Exception):
+    pass
+
+
+def ls_github(url, cache_ttl=None):
+
+    # FIXME: Move cache to a class or find a package.
+    cache_name = "github.pickle"
+
+    def load_cache():
+        try:
+            cache = pickle.load(open(cache_name, 'rb'))
+        except IOError:
+            cache = {}
+        return cache
+
+    def save_cache(cache):
+        pickle.dump(cache, open(cache_name, 'wb'))
+
+    cache = load_cache()
+    if url in cache and (cache_ttl is None or (
+        (datetime.now()-cache[url]['timestamp']).total_seconds() <
+            cache_ttl)):
+        data = cache[url]['data']
+    else:
+        while True:
+            data = json.loads(urllib.request.urlopen(url).read().decode())
+            if "message" in data:
+                print("Warning: {}".format(data["message"]))
+                time.sleep(1)
+                continue
+            else:
+                break
+        cache[url] = {
+            'timestamp': datetime.now(),
+            'data': data
+        }
+    save_cache(cache)
+
+    return data
 
 _Version = namedtuple("Version", ("version", "commits", "hash"))
 
@@ -193,9 +228,25 @@ def get_targets(args, rev, targets_url):
         print("Did not find target {} for platform {} at rev {} (found {})".
               format(args.target, args.platform, rev,
                      ", ".join(possible_targets)))
-        sys.exit(1)
+        raise TargetNotFound()
 
     return possible_targets
+
+
+def find_last_rev(args, possible_revs):
+
+    possible_revs.reverse()
+    archive_url = get_url(args)
+    for rev in possible_revs:
+        rev_url = get_rev_url(archive_url, rev)
+        possible_platforms = get_platforms(args, rev_url)
+        targets_url = get_targets_url(args, rev_url)
+        try:
+            possible_targets = get_targets(args, rev, targets_url)
+            print("found at rev {}".format(rev))
+            return rev
+        except TargetNotFound:
+            continue
 
 
 def get_archs_url(args, targets_url):
@@ -230,7 +281,9 @@ def get_firmwares_url(args, archs_url):
 
 def get_firmwares(args, firmwares_url):
 
-    firmwares = ls_github(firmwares_url)
+    # this changes as builds are added.
+    # builds take over 20 min, so refresh every 20 min.
+    firmwares = ls_github(firmwares_url, cache_ttl=60*20)
     possible_firmwares = [
         d['name'] for d in firmwares
         if d['type'] == 'file' and d['name'].endswith('.bin')
@@ -297,7 +350,12 @@ def main():
     possible_platforms = get_platforms(args, rev_url)
 
     targets_url = get_targets_url(args, rev_url)
-    possible_targets = get_targets(args, rev, targets_url)
+    try:
+        possible_targets = get_targets(args, rev, targets_url)
+    except TargetNotFound:
+        rev = find_last_rev(args, possible_revs)
+        # TODO: use this rev instead.
+        sys.exit(1)
 
     archs_url = get_archs_url(args, targets_url)
     possible_archs = get_archs(args, archs_url)
