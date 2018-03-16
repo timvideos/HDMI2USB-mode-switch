@@ -135,8 +135,11 @@ def get_url(args):
 
 def get_revs(archive_url):
 
+    # this changes as revs are added.
+    # builds take over 20 min, so refresh every 20 min.
+
     print("revs = ls_github(archive_url) {}".format(archive_url))
-    revs = ls_github(archive_url)
+    revs = ls_github(archive_url, cache_ttl=60*20)
     possible_revs = [Version(d['name']) for d in revs if d['type'] == 'dir']
     possible_revs.sort()
 
@@ -281,9 +284,7 @@ def get_firmwares_url(args, archs_url):
 
 def get_firmwares(args, firmwares_url):
 
-    # this changes as builds are added.
-    # builds take over 20 min, so refresh every 20 min.
-    firmwares = ls_github(firmwares_url, cache_ttl=60*20)
+    firmwares = ls_github(firmwares_url)
     possible_firmwares = [
         d['name'] for d in firmwares
         if d['type'] == 'file' and d['name'].endswith('.bin')
