@@ -120,12 +120,12 @@ def parse_args():
     return args
 
 
-def get_url(args):
+def mk_url(user, branch):
 
     details = {
-        "owner": args.user,
+        "owner": user,
         "repo": "HDMI2USB-firmware-prebuilt",
-        "branch": args.branch,
+        "branch": branch,
     }
     archive_url = "https://api.github.com/repos/{owner}/{repo}/contents/archive/{branch}/".format(
         **details)
@@ -146,36 +146,48 @@ def get_revs(archive_url):
     return possible_revs
 
 
-def get_rev(args, possible_revs):
+def get_goog_sheet():
 
-    rev = args.rev
+    data = urllib.request.urlopen(
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv"
+    ).read().decode('utf-8')
+
+    rev_names = {}
+    for i in csv.reader(data.splitlines(), dialect='excel'):
+        print(len(i),i)
+        if not i:
+            continue
+        if i[0] == "Link":
+            continue
+        if i[0] != "GitHub":
+            pass
+            # continue
+        if len(i) != 7:
+            print("Skipping row %s" % i)
+            continue
+
+        _, _, rev_str, name, conf, notes, more_notes = i
+
+        if not rev_str:
+            continue
+
+        print(rev_str, name)
+        rev = Version(rev_str)
+        # assert rev in possible_revs
+        # assert name not in rev_names, "{} is listed multiple times!".format(name)
+        rev_names[name] = rev
+
+    return rev_names
+
+
+def get_rev(possible_revs,rev=None, channel="unstable"):
+
     if not rev:
 
-        channel = args.channel
         if channel == "unstable":
             rev = possible_revs[-1]
         else:
-            data = urllib.request.urlopen(
-                "https://docs.google.com/spreadsheets/d/e/2PACX-1vTmqEM-XXPW4oHrJMD7QrCeKOiq1CPng9skQravspmEmaCt04Kz4lTlQLFTyQyJhcjqzCc--eO2f11x/pub?output=csv"
-            ).read()
-
-            rev_names = {}
-            for i in csv.reader(data.splitlines(), dialect='excel'):
-                if not i:
-                    continue
-                if i[0] != "GitHub":
-                    continue
-                if len(i) != 6:
-                    print("Skipping row %s" % i)
-                    continue
-
-                _, _, rev_str, name, conf, _ = i
-                rev = Version(rev_str)
-                assert rev in possible_revs
-                assert name not in rev_names, "{} is listed multiple times!".format(
-                    name)
-                rev_names[name] = rev
-
+            rev_names = get_goog_sheet()
             if channel not in rev_names:
                 print("Did not find {} in {}".format(channel, rev_names))
                 sys.exit(1)
@@ -239,7 +251,7 @@ def get_targets(args, rev, targets_url):
 def find_last_rev(args, possible_revs):
 
     possible_revs.reverse()
-    archive_url = get_url(args)
+    archive_url = mk_url(args.user, args.branch)
     for rev in possible_revs:
         rev_url = get_rev_url(archive_url, rev)
         possible_platforms = get_platforms(args, rev_url)
@@ -343,9 +355,9 @@ def main():
 
     args = parse_args()
 
-    archive_url = get_url(args)
+    archive_url = mk_url(args.user, args.branch)
     possible_revs = get_revs(archive_url)
-    rev = get_rev(args, possible_revs)
+    rev = get_rev(possible_revs, args.rev, args.channel)
     rev_url = get_rev_url(archive_url, rev)
 
     possible_platforms = get_platforms(args, rev_url)
