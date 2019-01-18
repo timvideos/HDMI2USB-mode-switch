@@ -154,12 +154,24 @@ def flash_fx2(board, filename, verbose=False):
 
 
 class OpenOCDError(subprocess.CalledProcessError):
-    def __init__(self, msg, returncode, cmd, output):
+    def __init__(self, msg, fatal_errors, retry_errors, returncode, cmd, output):
         subprocess.CalledProcessError.__init__(
             self, returncode, cmd, output)
+
+        fatal = ""
+        if fatal_errors:
+            fatal = "\n".join(
+                ["\nFound fatal errors: "]+[" - " + f for f in fatal_errors])
+            retry += "\n"
+
+        retry = ""
+        if retry_errors:
+            retry = "\n".join(
+                ["\nFound retry errors: "]+[" - " + f for f in retry_errors])
+
         self.message = """\
 OpenOCD run failure: {msg}.
-
+{fatal}{retry}
 OpenOCD command line resulted in {returncode}
 -----
 {cmd}
@@ -169,10 +181,15 @@ OpenOCD output:
 -----
 {output}
 -----
-""".format(msg=msg, returncode=returncode, cmd=cmd, output=output)
+""".format(msg=msg, retry=retry, fatal=fatal, returncode=returncode, cmd=cmd,
+           output=output)
 
     def __str__(self):
         return self.message
+
+
+class OpenOCDRetryError(OpenOCDError):
+    pass
 
 
 def _openocd_script(board, script, verbose=False):
@@ -208,15 +225,8 @@ def _openocd_script(board, script, verbose=False):
                 break
         output = "".join(output)
 
-    if p.returncode != 0:
-        raise OpenOCDError(
-            "Returned {}".format(p.returncode),
-            p.returncode,
-            cmdline,
-            output)
-
     # Look for common errors in the OpenOCD output
-    error_strings = [
+    retry_strings = [
         # DNA Failed to read correctly if this error is seen.
         "DNA = [01]+ \\(0x18181818.*\\)",
 
@@ -225,17 +235,42 @@ def _openocd_script(board, script, verbose=False):
         "Warn : Bypassing JTAG setup events due to errors",
         "Error: Trying to use configured scan chain anyway...",
     ]
-
-    errors_found = set()
-    for err in error_strings:
-        found = re.search(err, output)
+    retry_error_msgs = set()
+    for msg in retry_strings:
+        found = re.search(msg, output)
         if not found:
             continue
-        errors_found.add("- " + found.group(0))
-    if errors_found:
-        raise OpenOCDError(
-            "Found following errors in output;\n" +
-            "\n".join(errors_found), p.returncode, cmdline, output)
+        retry_error_msgs.add(found.group(0))
+
+    # Look for common errors in the OpenOCD output
+    fatal_strings = [
+        # FIXME: Put something here.
+    ]
+    fatal_error_msgs = set()
+    for msg in fatal_strings:
+        found = re.search(msg, output)
+        if not found:
+            continue
+        fatal_error_msgs.add(found.group(0))
+
+    if p.returncode == 0 and not retry_error_msgs+fatal_error_msgs:
+        return
+
+    if fatal_error_msgs:
+        msg = "Fatal error!"
+        openocd_error = OpenOCDError
+    else:
+        msg = "Error which means we should retry..."
+        openocd_error = OpenOCDRetryError
+
+    raise openocd_error(
+        msg,
+        fatal_error_msgs,
+        retry_error_msgs,
+        p.returncode,
+        cmdline,
+        output,
+    )
 
 
 def _openocd_flash(board, filepath, location, verbose=False):
