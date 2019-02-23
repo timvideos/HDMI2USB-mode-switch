@@ -253,7 +253,7 @@ def _openocd_script(board, script, verbose=False):
             continue
         fatal_error_msgs.add(found.group(0))
 
-    if p.returncode == 0 and not retry_error_msgs+fatal_error_msgs:
+    if p.returncode == 0 and not retry_error_msgs.union(fatal_error_msgs):
         return
 
     if fatal_error_msgs:
