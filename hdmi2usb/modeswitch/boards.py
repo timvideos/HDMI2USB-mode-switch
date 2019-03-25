@@ -154,20 +154,23 @@ def flash_fx2(board, filename, verbose=False):
 
 
 class OpenOCDError(subprocess.CalledProcessError):
-    def __init__(self, msg, fatal_errors, retry_errors, returncode, cmd, output):
+    def __init__(
+            self, msg, fatal_errors, retry_errors, returncode, cmd, output):
         subprocess.CalledProcessError.__init__(
             self, returncode, cmd, output)
 
         fatal = ""
         if fatal_errors:
             fatal = "\n".join(
-                ["\nFound fatal errors: "]+[" - " + f for f in fatal_errors])
+                ["\nFound fatal errors: "] + [" - " + f for f in fatal_errors]
+            )
             retry += "\n"
 
         retry = ""
         if retry_errors:
             retry = "\n".join(
-                ["\nFound retry errors: "]+[" - " + f for f in retry_errors])
+                ["\nFound retry errors: "] + [" - " + f for f in retry_errors]
+            )
 
         self.message = """\
 OpenOCD run failure: {msg}.
