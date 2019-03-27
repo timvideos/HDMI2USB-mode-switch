@@ -51,7 +51,7 @@ version:
 	python3 setup.py version
 
 check:
-	pycodestyle hdmi2usb --ignore=E402
+	pycodestyle hdmi2usb --ignore=E402 --ignore=W503
 	pycodestyle *.py
 
 fix:

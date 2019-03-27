@@ -243,8 +243,7 @@ def switch_mode(args, board, newmode):
                 board = found_board
                 break
 
-            if (args.timeout and starttime -
-                    time.time() > args.timeout):
+            if (args.timeout and starttime - time.time() > args.timeout):
                 raise SystemError("Timeout!")
 
         if args.verbose:
@@ -294,13 +293,14 @@ def main():
         assert len(found_boards) == 1
         board = found_boards[0]
 
-        if not args.mode and (args.load_gateware or
-                              args.flash_gateware or
-                              args.reset_gateware or
-                              args.flash_softcpu_bios or
-                              args.flash_softcpu_firmware or
-                              args.clear_softcpu_firmware or
-                              args.flash_image):
+        if not args.mode and (
+                args.load_gateware
+                or args.flash_gateware
+                or args.reset_gateware
+                or args.flash_softcpu_bios
+                or args.flash_softcpu_firmware
+                or args.clear_softcpu_firmware
+                or args.flash_image):
             args.mode = 'jtag'
 
         # FIXME: Hack to work around issue on the FX2.
@@ -368,10 +368,10 @@ def main():
     found_boards = find_boards(args)
 
     for board in found_boards:
-        if not (args.get_usbfs or
-                args.get_sysfs or
-                args.get_video_device or
-                args.get_serial_device):
+        if not (args.get_usbfs
+                or args.get_sysfs
+                or args.get_video_device
+                or args.get_serial_device):
             print("Found %s boards." % len(found_boards))
             break
 
