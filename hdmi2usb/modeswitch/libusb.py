@@ -9,11 +9,13 @@ This should be portable to Mac, Windows and Linux.
 
 import logging
 import usb
-if usb.__file__.endswith('.so'):
-    logging.warning("Your python usb module is old.")
 import usb.util
 
 from .base import *
+
+
+if usb.__file__.endswith('.so'):
+    logging.warning("Your python usb module is old.")
 
 
 class LibDevice(DeviceBase):
