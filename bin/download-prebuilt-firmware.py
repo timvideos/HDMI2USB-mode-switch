@@ -94,6 +94,7 @@ def parse_args():
             help='Get for a specific platform (board + expansion boards configuration).')
     parser.add_argument('--board',
             help='Alias for --platform.', dest="platform")
+
     parser.add_argument('--channel',
             help="Get latest version from in a specific channel ().",
             default="unstable")
@@ -102,6 +103,7 @@ def parse_args():
     parser.add_argument('--latest', dest="channel", action="store_const",
             help="Get the latest version.",
             const="unstable")
+
     parser.add_argument('--branch',
             help="Branch to download from.", default="master")
     parser.add_argument('--target',
