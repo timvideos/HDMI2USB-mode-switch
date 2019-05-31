@@ -86,10 +86,10 @@ def parse_args():
 
     parser = argparse.ArgumentParser(
             description='Download prebuilt firmware')
-    parser.add_argument('--user',
-            help='Github user to download from.', default="timvideos")
+
     parser.add_argument('--rev',
             help='Get a specific version.')
+
     parser.add_argument('--platform',
             help='Get for a specific platform (board + expansion boards configuration).')
     parser.add_argument('--board',
@@ -104,14 +104,17 @@ def parse_args():
             help="Get the latest version.",
             const="unstable")
 
-    parser.add_argument('--branch',
-            help="Branch to download from.", default="master")
     parser.add_argument('--target',
             help="Target to download from.", default="hdmi2usb")
     parser.add_argument('--firmware',
             help="Firmware to download from.", default="firmware")
     parser.add_argument('--arch', default="lm32",
             help="Soft-CPU architecture to download from.")
+
+    parser.add_argument('--user',
+            help='Github user to download from.', default="timvideos")
+    parser.add_argument('--branch',
+            help="Branch to download from.", default="master")
 
     args = parser.parse_args()
 
