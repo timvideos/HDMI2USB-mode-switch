@@ -116,6 +116,9 @@ def parse_args():
     parser.add_argument('--branch',
             help="Branch to download from.", default="master")
 
+    parser.add_argument('-o', '--output',
+            help="Output filename.", )
+
     args = parser.parse_args()
 
     assert args.platform
@@ -346,10 +349,14 @@ def get_image_url(args, rev, filename):
 
 def download(args, rev, filename, image_url):
 
-    parts = os.path.splitext(filename)
-    out_filename = ".".join(
-        list(parts[:-1]) +
-        [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
+    if args.output:
+        out_filename = args.output
+    else:
+        parts = os.path.splitext(filename)
+        out_filename = ".".join(
+            list(parts[:-1]) +
+            [str(rev), args.platform, args.target, args.arch, parts[-1][1:]])
+
     print("Downloading to: {}".format(out_filename))
     urllib.request.urlretrieve(image_url, out_filename)
 
