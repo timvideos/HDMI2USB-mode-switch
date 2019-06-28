@@ -516,13 +516,14 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
 
     # FIXME: This is a horrible hack!?@
     # Patch the Atlys board so the exar_uart is associated with it.
-    if exart_uarts:
-        atlys_boards = [b for b in all_boards if b.type == "atlys"]
+    atlys_boards = [b for b in all_boards if b.type == "atlys"]
+    if exart_uarts and atlys_boards:
         if verbose:
             sys.stderr.write(
                 " Found exart-uarts at %s associating with Atlys at %s\n" %
                 (exart_uarts, atlys_boards))
-        assert len(exart_uarts) == len(atlys_boards)
+        assert len(exart_uarts) == len(atlys_boards), repr(
+            (exart_uarts, atlys_boards))
         assert len(atlys_boards) == 1
 
         def extra_tty(
