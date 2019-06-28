@@ -522,7 +522,7 @@ def find_boards(prefer_hardware_serial=True, verbose=False):
             sys.stderr.write(
                 " Found exart-uarts at %s associating with Atlys at %s\n" %
                 (exart_uarts, atlys_boards))
-        assert len(exart_uarts) == len(atlys_boards)
+        assert len(exart_uarts) == len(atlys_boards), repr((exart_uarts, atlys_boards))
         assert len(atlys_boards) == 1
 
         def extra_tty(
