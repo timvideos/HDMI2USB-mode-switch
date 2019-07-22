@@ -11,11 +11,6 @@ include /usr/share/dpkg/pkg-info.mk
 
 override_dh_auto_install:
 	python3 setup.py install --root=$(CURDIR)/debian/$(DEB_SOURCE) --install-layout=deb
-	# udev rules
-	mkdir -p $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
-	cp udev/*.rules $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
-	install --mode=0755 --owner=root --group=root udev/hdmi2usb-human-path-helper.sh $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/
-	sed -i -e's-/etc/udev/rules.d/-/lib/udev/rules.d/-' $(CURDIR)/debian/$(DEB_SOURCE)-udev/lib/udev/rules.d/*
 	# unbind-helper
 	gcc -Wall -std=c99 unbind-helper.c -o debian/unbind-helper
 	mkdir -p $(CURDIR)/debian/$(DEB_SOURCE)-unbind-helper/usr/sbin/

@@ -23,4 +23,3 @@ script:
   - make check
   - make test || true
   - make root-test || true
-  - cd udev; make test

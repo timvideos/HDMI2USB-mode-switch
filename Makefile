@@ -36,16 +36,6 @@ clean-unbind-helper:
 
 .PHONY: unbind-helper check-unbind-helper clean-unbind-helper
 
-# udev rules
-install-udev:
-	cd udev; make install; make reload
-
-check-udev:
-	cd udev; make check
-
-uninstall-udev:
-	cd udev; make uninstall
-
 # Useful python targets
 version:
 	python3 setup.py version
@@ -61,7 +51,6 @@ test:
 	python3 -m "hdmi2usb.modeswitch.tests"
 	python3 hdmi2usb/modeswitch/files.py hdmi2usb/firmware/spartan6/atlys/bscan_spi_xc6slx45.bit
 	python3 setup.py test
-	$(MAKE) -C udev test
 
 root-test:
 	sudo make test
@@ -93,9 +82,6 @@ setup:
 	fi
 	if ! make check-unbind-helper; then \
 		make -s unbind-helper; \
-	fi
-	if ! make check-udev; then \
-		make -s install-udev; \
 	fi
 	@make --quiet config
 

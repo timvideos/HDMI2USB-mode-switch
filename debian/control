@@ -23,21 +23,10 @@ Description: HDMI2USB mode-switch tool
 Package: hdmi2usb-mode-switch-unbind-helper
 Architecture: linux-any
 Depends: ${misc:Depends}
-Suggests: hdmi2usb-mode-switch-udev
+Suggests: hdmi2usb-udev
 Description: HDMI2USB mode-switch driver unbinding helper
  ${Description}
  .
  Tool to allow non-root users to unbind drivers from USB devices.
  .
  ${Requirement}
-
-Package: hdmi2usb-mode-switch-udev
-Architecture: all
-Suggests: hdmi2usb-mode-switch-unbind-helper
-Description: HDMI2USB udev rules
- ${Description}
- .
- This package provides a udev rules files for HDMI2USB devices.
- .
- ${Requirement}
-
