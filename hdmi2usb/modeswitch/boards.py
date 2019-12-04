@@ -146,6 +146,8 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
 
 
 def flash_fx2(board, filename, verbose=False):
+    assert filename.endswith('.dfu'), 'Firmware file must be in DFU format, e.g. see `fx2tool dfu -h` from libfx2 library.'
+
     if board.dev.inuse():
         if verbose:
             sys.stderr.write("Detaching drivers from board.\n")
