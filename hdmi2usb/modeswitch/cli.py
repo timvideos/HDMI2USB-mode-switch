@@ -321,8 +321,16 @@ def main():
                 board, filename=args.load_fx2_firmware,
                 verbose=args.verbose)
 
-        # Flash firmware onto fx2 eeprom
         elif args.flash_fx2_eeprom:
+            # First, load DFU capable firmware
+            boards.load_fx2(
+                board, filename='boot-dfu.ihex',
+                verbose=args.verbose)
+
+            # wait for the new board to reenumerate
+            time.sleep(2)
+
+            # Now flash the firmware
             boards.flash_fx2(
                 board, filename=args.flash_fx2_eeprom,
                 verbose=args.verbose)
