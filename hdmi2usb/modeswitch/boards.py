@@ -146,11 +146,31 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
 
 
 def flash_fx2(board, filename, verbose=False):
-    assert board.state == "eeprom", board
-    assert not board.dev.inuse()
+    if board.dev.inuse():
+        if verbose:
+            sys.stderr.write("Detaching drivers from board.\n")
+        board.dev.detach()
 
-    assert board.type == "opsis", (
-        "Only support flashing the Opsis for now (not %s)." % board.type)
+    filepath = firmware_path(filename)
+    assert os.path.exists(filepath), filepath
+
+    sys.stderr.write("Using FX2 firmware %s\n" % filename)
+
+    cmdline = ["dfu-util", "-D", filepath]
+    if verbose:
+        cmdline += ["-v", ]
+
+    if verbose:
+        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+
+    env = os.environ.copy()
+    env['PATH'] = env['PATH'] + ':/usr/sbin:/sbin'
+
+    try:
+        output = subprocess.run(
+            cmdline, stderr=subprocess.STDOUT, env=env)
+    except subprocess.CalledProcessError as e:
+        raise
 
 
 class OpenOCDError(subprocess.CalledProcessError):
