@@ -47,6 +47,15 @@ def firmware_path(filepath):
     assert False, "{} not found in {}".format(filepath, locations)
 
 
+def poll_until(condition, timeout_sec, dt=0.1):
+    start_time = time.time()
+    satisfied = condition()
+    while not satisfied and (time.time() - start_time) < timeout_sec:
+        satisfied = condition()
+        time.sleep(dt)
+    return satisfied
+
+
 BOARD_TYPES = [
     'opsis',
     'atlys',
@@ -106,16 +115,20 @@ class Board(BoardBase):
         return self.dev.tty()
 
 
+def detach_board_drivers(board, verbose=False):
+    if board.dev.inuse():
+        if verbose:
+            sys.stderr.write("Detaching drivers from board.\n")
+        board.dev.detach()
+
+
 def load_fx2(board, mode=None, filename=None, verbose=False):
     if mode is not None:
         assert filename is None
         filename = firmware_path(
             'fx2/{}/{}'.format(board.type, FX2_MODE_MAPPING[mode]))
 
-    if board.dev.inuse():
-        if verbose:
-            sys.stderr.write("Detaching drivers from board.\n")
-        board.dev.detach()
+    detach_board_drivers(board, verbose=verbose)
 
     filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
@@ -145,14 +158,14 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
             raise
 
 
-def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
-                            filename='boot-dfu.ihex', vid=0x04B4, pid=0x8613):
+def load_fx2_dfu_bootloader(board, verbose=False, filename='boot-dfu.ihex',
+                            vid_pid=(0x04B4, 0x8613)):
     """
     Loads bootloader firmware onto given board and updates the board to point
     to correct device. The device is identified using bootloader's VID and PID.
     """
     def is_bootloader(dev):
-        return (dev.vid, dev.pid) == (vid, pid)
+        return (dev.vid, dev.pid) == vid_pid
 
     def find_bootloader():
         devices = filter(is_bootloader, usbapi.find_usb_devices())
@@ -166,12 +179,7 @@ def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
     load_fx2(board, filename=filename, verbose=verbose)
 
     # wait for the new device to enumerate
-    start_time = time.time()
-    dt = 0.1
-    devices_found = []
-    while len(devices_found) == 0 and (time.time() - start_time) < timeout_sec:
-        devices_found = find_bootloader()
-        time.sleep(dt)
+    devices_found = poll_until(condition=find_bootloader, timeout_sec=3)
 
     assert len(devices_found) > 0, 'Bootloader not found'
     assert len(devices_found) == 1, 'More than one bootloader found'
@@ -183,10 +191,7 @@ def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
 def flash_fx2(board, filename, verbose=False):
     assert filename.endswith('.dfu'), 'Firmware file must be in DFU format.'
 
-    if board.dev.inuse():
-        if verbose:
-            sys.stderr.write("Detaching drivers from board.\n")
-        board.dev.detach()
+    detach_board_drivers(board, verbose=verbose)
 
     filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
@@ -203,11 +208,7 @@ def flash_fx2(board, filename, verbose=False):
     env = os.environ.copy()
     env['PATH'] = env['PATH'] + ':/usr/sbin:/sbin'
 
-    try:
-        output = subprocess.run(
-            cmdline, stderr=subprocess.STDOUT, env=env)
-    except subprocess.CalledProcessError as e:
-        raise
+    output = subprocess.run(cmdline, stderr=subprocess.STDOUT, env=env)
 
 
 class OpenOCDError(subprocess.CalledProcessError):
