@@ -160,8 +160,8 @@ def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
 
     # Make sure no other bootloader is present
     assert len(find_bootloader()) == 0, (
-        'Found another bootloader (%04x:%04x), will not later be able to determine'
-        ' which one to use') % (vid, pid)
+        'Found another bootloader (%04x:%04x), will not later be able to '
+        'determine which one to use') % (vid, pid)
 
     load_fx2(board, filename=filename, verbose=verbose)
 
@@ -181,7 +181,7 @@ def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
 
 
 def flash_fx2(board, filename, verbose=False):
-    assert filename.endswith('.dfu'), 'Firmware file must be in DFU format, e.g. see `fx2tool dfu -h` from libfx2 library.'
+    assert filename.endswith('.dfu'), 'Firmware file must be in DFU format.'
 
     if board.dev.inuse():
         if verbose:
