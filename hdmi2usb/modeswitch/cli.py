@@ -321,18 +321,10 @@ def main():
                 board, filename=args.load_fx2_firmware,
                 verbose=args.verbose)
 
+        # First, load DFU capable bootloader, then flash the firmware
         elif args.flash_fx2_eeprom:
-            # First, load DFU capable firmware
-            boards.load_fx2(
-                board, filename='boot-dfu.ihex',
-                verbose=args.verbose)
-
-            # wait for the new board to reenumerate
-            time.sleep(2)
-
-            # Now flash the firmware
-            boards.flash_fx2(
-                board, filename=args.flash_fx2_eeprom,
+            board = boards.load_fx2_dfu_bootloader(board, verbose=args.verbose)
+            boards.flash_fx2(board, filename=args.flash_fx2_eeprom,
                 verbose=args.verbose)
 
         # Load gateware onto the FPGA

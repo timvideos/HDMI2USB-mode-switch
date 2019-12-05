@@ -145,6 +145,41 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
             raise
 
 
+def load_fx2_dfu_bootloader(board, verbose=False, timeout_sec=3,
+                            filename='boot-dfu.ihex', vid=0x04B4, pid=0x8613):
+    """
+    Loads bootloader firmware onto given board and updates the board to point
+    to correct device. The device is identified using bootloader's VID and PID.
+    """
+    def is_bootloader(dev):
+        return (dev.vid, dev.pid) == (vid, pid)
+
+    def find_bootloader():
+        devices = filter(is_bootloader, usbapi.find_usb_devices())
+        return list(devices)
+
+    # Make sure no other bootloader is present
+    assert len(find_bootloader()) == 0, (
+        'Found another bootloader (%04x:%04x), will not later be able to determine'
+        ' which one to use') % (vid, pid)
+
+    load_fx2(board, filename=filename, verbose=verbose)
+
+    # wait for the new device to enumerate
+    start_time = time.time()
+    dt = 0.1
+    devices_found = []
+    while len(devices_found) == 0 and (time.time() - start_time) < timeout_sec:
+        devices_found = find_bootloader()
+        time.sleep(dt)
+
+    assert len(devices_found) > 0, 'Bootloader not found'
+    assert len(devices_found) == 1, 'More than one bootloader found'
+
+    board = Board(dev=devices_found[0], type=board.type, state='dfu-boot')
+    return board
+
+
 def flash_fx2(board, filename, verbose=False):
     assert filename.endswith('.dfu'), 'Firmware file must be in DFU format, e.g. see `fx2tool dfu -h` from libfx2 library.'
 
