@@ -158,23 +158,27 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
             raise
 
 
-def load_fx2_dfu_bootloader(board, verbose=False, filename='boot-dfu.ihex',
-                            vid_pid=(0x04B4, 0x8613)):
+def load_fx2_dfu_bootloader(board, verbose=False, filename='boot-dfu.ihex'):
     """
     Loads bootloader firmware onto given board and updates the board to point
-    to correct device. The device is identified using bootloader's VID and PID.
+    to correct device. The device is identified using previous SysFs path of
+    the device, which should be guaranteed not to change.
     """
+    # use current sysfs path to later identify the bootloader after enumeration
+    dev_syspath = sorted(board.dev.syspaths)[0]
+    # because the sysfs path does not dissappear after loading new firmware,
+    # we also have to make sure that the device path (/dev/bus/usb/xxx/xxx)
+    # is different to ensure that we are dealing with a new device
+    previous_dev_path = board.dev.path
+
     def is_bootloader(dev):
-        return (dev.vid, dev.pid) == vid_pid
+        is_new_dev = dev.path != previous_dev_path
+        same_syspath = dev_syspath in dev.syspaths
+        return is_new_dev and same_syspath
 
     def find_bootloader():
         devices = filter(is_bootloader, usbapi.find_usb_devices())
         return list(devices)
-
-    # Make sure no other bootloader is present
-    assert len(find_bootloader()) == 0, (
-        'Found another bootloader (%04x:%04x), will not later be able to '
-        'determine which one to use') % (vid, pid)
 
     load_fx2(board, filename=filename, verbose=verbose)
 
