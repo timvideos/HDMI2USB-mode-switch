@@ -47,6 +47,15 @@ def firmware_path(filepath):
     assert False, "{} not found in {}".format(filepath, locations)
 
 
+def poll_until(condition, timeout_sec, dt=0.1):
+    start_time = time.time()
+    satisfied = condition()
+    while not satisfied and (time.time() - start_time) < timeout_sec:
+        satisfied = condition()
+        time.sleep(dt)
+    return satisfied
+
+
 BOARD_TYPES = [
     'opsis',
     'atlys',
@@ -106,16 +115,20 @@ class Board(BoardBase):
         return self.dev.tty()
 
 
+def detach_board_drivers(board, verbose=False):
+    if board.dev.inuse():
+        if verbose:
+            sys.stderr.write("Detaching drivers from board.\n")
+        board.dev.detach()
+
+
 def load_fx2(board, mode=None, filename=None, verbose=False):
     if mode is not None:
         assert filename is None
         filename = firmware_path(
             'fx2/{}/{}'.format(board.type, FX2_MODE_MAPPING[mode]))
 
-    if board.dev.inuse():
-        if verbose:
-            sys.stderr.write("Detaching drivers from board.\n")
-        board.dev.detach()
+    detach_board_drivers(board, verbose=verbose)
 
     filepath = firmware_path(filename)
     assert os.path.exists(filepath), filepath
@@ -145,12 +158,61 @@ def load_fx2(board, mode=None, filename=None, verbose=False):
             raise
 
 
-def flash_fx2(board, filename, verbose=False):
-    assert board.state == "eeprom", board
-    assert not board.dev.inuse()
+def load_fx2_dfu_bootloader(board, verbose=False, filename='boot-dfu.ihex'):
+    """
+    Loads bootloader firmware onto given board and updates the board to point
+    to correct device. The device is identified using previous SysFs path of
+    the device, which should be guaranteed not to change.
+    """
+    # use current sysfs path to later identify the bootloader after enumeration
+    dev_syspath = sorted(board.dev.syspaths)[0]
+    # because the sysfs path does not dissappear after loading new firmware,
+    # we also have to make sure that the device path (/dev/bus/usb/xxx/xxx)
+    # is different to ensure that we are dealing with a new device
+    previous_dev_path = board.dev.path
 
-    assert board.type == "opsis", (
-        "Only support flashing the Opsis for now (not %s)." % board.type)
+    def is_bootloader(dev):
+        is_new_dev = dev.path != previous_dev_path
+        same_syspath = dev_syspath in dev.syspaths
+        return is_new_dev and same_syspath
+
+    def find_bootloader():
+        devices = filter(is_bootloader, usbapi.find_usb_devices())
+        return list(devices)
+
+    load_fx2(board, filename=filename, verbose=verbose)
+
+    # wait for the new device to enumerate
+    devices_found = poll_until(condition=find_bootloader, timeout_sec=3)
+
+    assert len(devices_found) > 0, 'Bootloader not found'
+    assert len(devices_found) == 1, 'More than one bootloader found'
+
+    board = Board(dev=devices_found[0], type=board.type, state='dfu-boot')
+    return board
+
+
+def flash_fx2(board, filename, verbose=False):
+    assert filename.endswith('.dfu'), 'Firmware file must be in DFU format.'
+
+    detach_board_drivers(board, verbose=verbose)
+
+    filepath = firmware_path(filename)
+    assert os.path.exists(filepath), filepath
+
+    sys.stderr.write("Using FX2 firmware %s\n" % filename)
+
+    cmdline = ["dfu-util", "-D", filepath]
+    if verbose:
+        cmdline += ["-v", ]
+
+    if verbose:
+        sys.stderr.write("Running %r\n" % " ".join(cmdline))
+
+    env = os.environ.copy()
+    env['PATH'] = env['PATH'] + ':/usr/sbin:/sbin'
+
+    output = subprocess.run(cmdline, stderr=subprocess.STDOUT, env=env)
 
 
 class OpenOCDError(subprocess.CalledProcessError):

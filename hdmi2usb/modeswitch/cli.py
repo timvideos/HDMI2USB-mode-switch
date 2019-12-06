@@ -124,7 +124,10 @@ Do operation on all boards, otherwise will error if multiple boards are found.
         help='Load firmware file onto the Cypress FX2.')
     parser.add_argument(
         '--flash-fx2-eeprom',
-        help='Flash the FX2 eeprom with data.')
+        help="""\
+Flash the FX2 eeprom with data. Requires dfu-util and a DFU capable firmware
+running on FX2.
+        """)
     # SoftCPU inside the FPGA gateware
     parser.add_argument(
         '--flash-softcpu-bios',
@@ -320,6 +323,12 @@ def main():
             boards.load_fx2(
                 board, filename=args.load_fx2_firmware,
                 verbose=args.verbose)
+
+        # First, load DFU capable bootloader, then flash the firmware
+        elif args.flash_fx2_eeprom:
+            board = boards.load_fx2_dfu_bootloader(board, verbose=args.verbose)
+            boards.flash_fx2(board, filename=args.flash_fx2_eeprom,
+                             verbose=args.verbose)
 
         # Load gateware onto the FPGA
         elif args.load_gateware:

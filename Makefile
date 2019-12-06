@@ -1,6 +1,6 @@
 
 # conda
-CONDA_PACKAGES = openocd
+CONDA_PACKAGES = openocd dfu-util
 PYTHON_PACKAGES = pyusb pycodestyle autopep8 setuptools-pep8
 include conda.mk
 
